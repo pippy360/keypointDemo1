@@ -112,6 +112,7 @@ var _g_preloadImage = null;
 var g_globalState = null;
 function newGlobalState() {
     return {
+        basePoints: null,
         activeCanvas: null,
         referenceCanvasState: null,
         interactiveCanvasState: null,
@@ -849,10 +850,10 @@ function drawTriangleWithColour(ctx, tri, strokeColour, fillColour, enableFill) 
 
 function drawKeypoints(interactiveCanvasContext, keypoints) {
     interactiveCanvasContext.beginPath();
-    interactiveCanvasContext.strokeStyle = "red";
+    interactiveCanvasContext.strokeStyle = "blue";
     for (var i = 0; i < keypoints.length; i++) {
         var currentKeypoint = keypoints[i];
-        interactiveCanvasContext.rect(currentKeypoint.x, currentKeypoint.y, 3, 3);
+        interactiveCanvasContext.rect(currentKeypoint.x, currentKeypoint.y, 1, 1);
     }
     interactiveCanvasContext.closePath();
     interactiveCanvasContext.stroke();
@@ -1079,9 +1080,8 @@ function drawPolygonPath(ctx, inPoints) {
     ctx.moveTo(inPoints[0].x, inPoints[0].y);
     for (var i = 1; i < inPoints.length; i++) {//i = 1 to skip first point
         var currentPoint = inPoints[i];
-        ctx.lineTo(currentPoint.x, currentPoint.y);
+        ctx.lineTo(currentPoint.x*10, currentPoint.y*10);
     }
-    ctx.closePath();
 }
 
 function cropCanvasImage(ctx, inPoints) {
@@ -1420,6 +1420,7 @@ function drawLayers(canvasState, drawingLayers) {
         var isActiveLayer = canvasState.activeLayer == drawingLayer.layer;
         var dontCropImage = isActiveLayer && isCroppingEffectActive && isActiveCanvas;
         var skipUiLayer = isCroppingEffectActive && isActiveCanvas && !isActiveLayer;
+        skipUiLayer = true;
         if (!g_drawingOptions.drawInteractiveCanvasUiLayer) {
             if (canvasState === g_globalState.interactiveCanvasState) {
                 skipUiLayer = true;
@@ -1481,25 +1482,13 @@ function buildInteractiveTriangleByReferenceTriangleMap(filteredTrianglesWithInd
 
 function draw() {
 
-    var interactiveCanvasLayers = g_globalState.interactiveCanvasState.layers;
-    var isInteractiveCanvasActive = g_globalState.activeCanvas == g_globalState.interactiveCanvasState;
-    var tempRet = buildInteractiveCanvasDrawingLayers(g_globalState.activeCanvas.imageLayerCanvas, interactiveCanvasLayers);
-    var interactiveImageDrawingLayersByInteractiveImageLayer = tempRet[0];
-    var interactiveImageDrawingLayers = tempRet[1];
-    drawLayers(g_globalState.interactiveCanvasState, interactiveImageDrawingLayers, isInteractiveCanvasActive);
-
-    var referenceCanvasLayers = g_globalState.referenceCanvasState.layers;
-    var isReferenceCanvasActive = g_globalState.activeCanvas == g_globalState.referenceCanvasState;
-    var canvasDimensions = g_globalState.referenceCanvasState.imageLayerCanvasContext.canvas;
-
-    var returnValueContainer = buildReferenceCanvasDrawingLayers(canvasDimensions, referenceCanvasLayers, interactiveImageDrawingLayersByInteractiveImageLayer);
-    var referenceImageDrawingLayers = returnValueContainer[0];
-    var filteredTrianglesWithIndexInLayerArray = returnValueContainer[1];
-
-    var triangleMapByReferenceTriangleIndex = buildInteractiveTriangleByReferenceTriangleMap(filteredTrianglesWithIndexInLayerArray, interactiveImageDrawingLayersByInteractiveImageLayer);
-    drawLayers(g_globalState.referenceCanvasState, referenceImageDrawingLayers, isReferenceCanvasActive);
-
-    return triangleMapByReferenceTriangleIndex;
+    var s = Smooth([1, 4, 3, 4, 3], {
+        method: 'sinc',
+        sincFilterSize: 100,
+        sincWindow: function(x) { return Math.exp(-x * x); }
+    });
+    plotThis(s, 1, 3, 4);
+    return [];
 }
 
 // #     #                         ###
@@ -1542,7 +1531,6 @@ function toggleDrawUIOverlayWrapper(event) {
     $("#toggleDrawUIOverlayButton").toggleClass('backgroundColourGrey');
     draw();
     
-    (0);//clear the triangle//HACK
 }
 
 function toggleDrawReferenceUIOverlayWrapper(event) {
@@ -2148,6 +2136,7 @@ function loadImageAndInit(imageSrc) {
     _g_preloadImage.onload = function () {
         initAfterImageLoad();
         _debug_addlayer('images/background_resize.jpg');
+        //plotThis(s, 1, 400, 100);
     };
 }
 
@@ -2201,6 +2190,27 @@ function animate() {
     };
 
     window.requestAnimationFrame(animateStep);
+}
+
+function getThePoints(f, x1, x2, subDiv) {
+    var increment = ((x2 - x1)*1.0)/(subDiv*1.0);
+    var result = [];
+    for (var i = 0; i < subDiv; i++) {
+        var x = x1*1.0 + i*increment;
+        result.push({x: x, y: f(x)});
+    }
+    debugger;
+    return result;
+}
+
+function plotThis(f, x1, x2, subDiv) {
+    var pts = getThePoints(f, x1, x2, subDiv);
+    var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
+    drawKeypoints(ctx, pts);
+    ctx.strokeStyle = "red";
+    ctx.beginPath();
+    drawPolygonPath(ctx, pts);
+    ctx.stroke();
 }
 
 function init() {

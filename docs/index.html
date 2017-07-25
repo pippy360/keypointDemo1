@@ -144,145 +144,6 @@
             </div>
         </div>
     </div>
-    <div class="moreWrapper">
-        <div class="more">
-            <button class="moreButton"><i class="material-icons">keyboard_arrow_down</i></button>
-        </div>
-    </div>
-    <article class="aboutAreaWrapper">
-        <div class="aboutArea">
-            <div>
-                <h2 style="margin-top: 10px">About</h2>
-                <p>
-                    This demo showcases a reverse image search algorithm which performs 2D affine transformation-invariant partial image-matching
-                    in sublinear time. The algorithm compares an input image to its database of preprocessed images and determines
-                    if the input matches any image in the database. The database need not contain the original image as inputs
-                    can be matched to any 2D affine transformation of the original. This means that images which have been
-                    scaled (uniformly or non-uniformly), skewed, translated, cropped or rotated (or have undergone any combination
-                    of these transformations) can be identified as coming from the same source image (Figure 1).
-                </p>
-                <p>
-                    The algorithm runs in sublinear time with respect to the number of images in the database, regardless of the number of transformations applied. 
-		Note that if image-matching could not be done in sublinear time it would not
-                    function at the scale that the likes of Google or Microsoft require.
-                </p>
-                <div class="affineDemoVideoWrapper articleContent">
-                    <video class="affineDemoVideo" controls loop>
-                        <source src="images/affineDemo.webm" type="video/webm; codecs=vp9,vorbis">
-                        <source src="images/affineDemo.mp4" type="video/mp4">
-                    </video>
-                    <div class="figureText"><b>Figure 1.</b> 2D affine transformation invariant image-matching</div>
-                </div>
-                <p>
-                    If the input is a composite of images or image fragments, the algorithm will return matches for each
-                    image/image fragment (Figure 2).
-                </p>
-                <div class="compositeMatchingImageWrapper articleContent">
-                    <img src="images/compositeMatching.png" class="compositeMatchingImage" style="width: 700px; height: 1230px" />
-                    <div class="figureText"><b>Figure 2.</b> The query image (c), which is a composite of (a) and (b), matches the
-                    two images (d) and (e) stored in the database</div>
-                </div>
-            </div>
-            <div>
-                <h2>How it Works</h2>
-                <div class="stepsWrapper clearfix">
-                    <div class="stepTextWrapper">
-                        <div class="boldListNumber">1.</div>
-                        <div class="stepText">
-                            The algorithm finds keypoints in the input using edge detection<a href="#supKeypointFinder"><sup>1</sup></a>.
-                        </div>
-                    </div>
-                    <div class="stepTextWrapper">
-                        <div class="boldListNumber">2.</div>
-                        <div class="stepText">
-                            Each set of three keypoints is converted into a triangle<a href="#supHashLookup"><sup>2</sup></a>.
-                        </div>
-                    </div>
-                    <div class="stepTextWrapper">
-                        <div class="boldListNumber">3.</div>
-                        <div class="stepText">
-                            These triangles are transformed into equilateral triangles.
-                        </div>
-                    </div>
-                    <div class="stepTextWrapper">
-                        <div class="boldListNumber">4.</div>
-                        <div class="stepText">
-                            A perceptual hashing algorithm (in this case PHash) is used to produce a hash for each triangle.
-                        </div>
-                    </div>
-                    <div class="stepTextWrapper">
-                        <div class="boldListNumber">5.</div>
-                        <div class="stepText">
-                            The algorithm compares the hash to those stored in the database and returns all matching
-                            images<a href="#supCompositeLookup"><sup>3</sup></a>.
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <p>
-                        All images in the database have been preprocessed in this manner to produce hashes for comparison.
-                    </p>
-                </div>
-                <div class="articleContent" class="mortyVideoWrapper">
-                    <video controls class="mortyVideo">
-                        <source src="images/morty.webm" type="video/webm; codecs=vp9,vorbis">
-                        <source src="images/morty.mp4" type="video/mp4">
-                    </video>
-                    <div class="figureText"><b>Figure 3.</b> Step-by-step video guide showing how the algorithm operates</div>
-                </div>
-                <div class="stepsWrapper clearfix" style="font-size: 16px; padding-bottom: 0">
-                    <div class="stepTextWrapper">
-                        <div class="boldListNumber" style="padding-top: 16px">
-                            <sup id="supKeypointFinder">1</sup>
-                        </div>
-                        <div class="stepText">
-                            Any keypoint-finding algorithm can be used so long as it is 2D
-                            affine transformation-invariant.
-                        </div>
-                    </div>
-                    <div class="stepTextWrapper">
-                        <div class="boldListNumber" style="padding-top: 20px">
-                            <sup id="supHashLookup">2</sup>
-                        </div>
-                        <div class="stepText">
-                            The comparison can be done through a hash lookup (which can be done in constant time)
-                            or by finding a ‘nearest-neighbour’ in the database (which can be done
-                            in amortized log<sub><span style="font-size: 10px">2</span></sub>n time).
-                        </div>
-                    </div>
-                    <div class="stepTextWrapper">
-                        <div class="boldListNumber" style="padding-top: 20px">
-                            <sup id="supCompositeLookup">3</sup>
-                        </div>
-                        <div class="stepText">
-                            The algorithm will return multiple matches if the input is a
-                            composite of images.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <h2>How it Compares to the Competition</h2>
-                <p>
-                    As you can see in Figure 4 below, the algorithm performs better than industry leaders in matching
-                    images which have undergone 2D affine transformations. Even the best-performing service, Google Image
-                    Search, fails to handle a simple 45 degree rotation.
-                </p>
-                <div class="articleContent">
-                    <img src="images/cats image.jpg" style="width: 100%">
-                    <div class="figureText">
-                        <b>Figure 4.</b> Comparison of the image-matching capabilities of our
-                        algorithm versus market leaders.
-                    </div>
-                </div>
-                <p>
-                    Market leaders show limited ability to find matches of images which have undergone certain transformations.
-                    Our algorithm solves this problem for 2D affine transformations and, if used in
-                    conjunction with other modern techniques, offers a significant improvement in reverse-image searching.
-                </p>
-            </div>
-        </div>
-    </article>
 </div>
 <!-- jQuery first, then Tether, then Bootstrap JS. -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -293,8 +154,8 @@
         integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
         crossorigin="anonymous"></script>
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="https://cloud.github.com/downloads/osuushi/Smooth.js/Smooth-0.1.7.js" ></script>
 <script src="main.js"></script>
-
 <script>
 
 $('#referenceUiToggle').change(function(e) {
