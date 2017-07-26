@@ -1080,7 +1080,7 @@ function drawPolygonPath(ctx, inPoints) {
     ctx.moveTo(inPoints[0].x, inPoints[0].y);
     for (var i = 1; i < inPoints.length; i++) {//i = 1 to skip first point
         var currentPoint = inPoints[i];
-        ctx.lineTo(currentPoint.x*10, currentPoint.y*10);
+        ctx.lineTo(currentPoint.x*30, currentPoint.y*30);
     }
 }
 
