@@ -18,6 +18,8 @@ var g_drawingOptions = {
     drawReferenceCanvasUiLayer: true,
 };
 
+var g_mult = 30;
+
 //
 // consts
 //
@@ -853,7 +855,7 @@ function drawKeypoints(interactiveCanvasContext, keypoints) {
     interactiveCanvasContext.strokeStyle = "blue";
     for (var i = 0; i < keypoints.length; i++) {
         var currentKeypoint = keypoints[i];
-        interactiveCanvasContext.rect(currentKeypoint.x, currentKeypoint.y, 1, 1);
+        interactiveCanvasContext.rect(currentKeypoint.x*g_mult, currentKeypoint.y*g_mult, 1, 1);
     }
     interactiveCanvasContext.closePath();
     interactiveCanvasContext.stroke();
@@ -1080,7 +1082,7 @@ function drawPolygonPath(ctx, inPoints) {
     ctx.moveTo(inPoints[0].x, inPoints[0].y);
     for (var i = 1; i < inPoints.length; i++) {//i = 1 to skip first point
         var currentPoint = inPoints[i];
-        ctx.lineTo(currentPoint.x*30, currentPoint.y*30);
+        ctx.lineTo(currentPoint.x*g_mult, currentPoint.y*g_mult);
     }
 }
 
