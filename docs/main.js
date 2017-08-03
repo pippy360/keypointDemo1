@@ -1702,7 +1702,9 @@ function getCirclePoints() {
 }
 
 function draw() {
-    //g_initPts = getCirclePoints();
+    g_initPts = getCirclePoints();
+    var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix((1+2*percentageDone), 1));
+    g_initPts = transformed;
     var xArr = stripX(g_initPts);
     var yArr = stripY(g_initPts);
     var fx = smooth(getUniformIndexes(xArr), xArr);
