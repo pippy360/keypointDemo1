@@ -69,19 +69,12 @@
                 <div id="bigCanvasContainerWrapper" class="bigCanvasContainerWrapper">
                     <div id="bigCanvasContainer" class="bigCanvasContainer">
                         <div class="canvasWrapperLeft">
-                            <label class="canvasTitle">Query Image</label>
-                            <div class="radio canvasTitleRight" id="interactiveUiToggle">
-                                <label class="checkbox-inline">
-                                    Show UI overlay
-                                    <input type="checkbox" id="inlineCheckbox2" value="option2" checked>
-                                </label>
-                            </div>
                             <div class="canvasShadow interactiveCanvasWrapper">
-                                <canvas id="queryImageCanvasImageContent" class="canvasBottom" width="280"
-                                        height="280"></canvas>
-                                <canvas id="queryImageCanvasUiOverlay" class="canvasTop" width="280" height="280"></canvas>
-                                <canvas id="queryImageCanvasImageOutline" class="canvasClickThrough" width="280" height="280"></canvas>
-                                <canvas id="queryImageCanvasHighlightedTriangle" class="canvasClickThrough" width="280" height="280"></canvas>
+                                <canvas id="queryImageCanvasImageContent" class="canvasBottom" width="400"
+                                        height="400"></canvas>
+                                <canvas id="queryImageCanvasUiOverlay" class="canvasTop" width="400" height="400"></canvas>
+                                <canvas  style="display: none;" id="queryImageCanvasImageOutline" class="canvasClickThrough" width="400" height="400"></canvas>
+                                <canvas style="display: none;" id="queryImageCanvasHighlightedTriangle" class="canvasClickThrough" width="400" height="400"></canvas>
                             </div>
                         </div>
                         <div class="canvasWrapperRight">
@@ -154,7 +147,7 @@
         integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
         crossorigin="anonymous"></script>
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-<script src="https://cloud.github.com/downloads/osuushi/Smooth.js/Smooth-0.1.7.js" ></script>
+<!--<script src="https://cloud.github.com/downloads/osuushi/Smooth.js/Smooth-0.1.7.js" ></script>-->
 <script src="main.js"></script>
 <script>
 

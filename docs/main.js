@@ -19,7 +19,19 @@ var g_drawingOptions = {
 };
 
 var g_mult = 30;
-
+var g_initPts = [
+    {x: 0, y: 0},
+    {x: 1, y: 1},
+    {x: 2, y: 1.5},
+    {x: 3, y: 3.5},
+    {x: 4, y: 4},
+    {x: 5, y: 1},
+    {x: 6, y: 2},
+    {x: 7, y: 3},
+    {x: 8, y: 5},
+];
+var g_start=1;
+var g_end=19;
 //
 // consts
 //
@@ -114,6 +126,7 @@ var _g_preloadImage = null;
 var g_globalState = null;
 function newGlobalState() {
     return {
+        currentMouseCanvasPosition: {x: 0, y: 0},
         basePoints: null,
         activeCanvas: null,
         referenceCanvasState: null,
@@ -386,6 +399,181 @@ function distance(a, b) {
 // #     # #    #   #   #    #
 // #     # #    #   #   #    #
 //math
+
+function stripX(pts) {
+    var result = [];
+    for (var i = 0; i < pts.length; i++) {
+        result.push(pts[i].x);
+    }
+    return result;
+}
+
+function stripY(pts) {
+    var result = [];
+    for (var i = 0; i < pts.length; i++) {
+        result.push(pts[i].y);
+    }
+    return result;
+}
+
+function getDerivative(stateStruct, t, i) {
+    var derivatives = calcSplineAtX(t, stateStruct.xs, stateStruct.ys, stateStruct.ks);
+    return derivatives[i];
+}
+
+function smooth(xs, ys) {
+    let _xs = xs;
+    let _ys = ys;
+    let ks = xs.map(function(){return 0});
+    ks = getNaturalKs(xs, ys, ks);//knots
+    return {
+        xs: _xs,
+        ys: _ys,
+        ks: ks
+    }
+}
+
+function calcSplineAtX(x, xs, ys, ks) {
+    var i = 1;
+    while(xs[i]<x) i++;
+    var t = (x - xs[i-1]) / (xs[i] - xs[i-1]);//t = percentage traveled across this poly = x / length_of_this_poly
+    var a =  ks[i-1]*(xs[i]-xs[i-1]) - (ys[i]-ys[i-1]);
+    var b = -ks[i]*(xs[i]-xs[i-1]) + (ys[i]-ys[i-1]);
+
+    var qinv = ys[i-1] + (a + ys[i] - ys[i-1])*t + (b-2*a)*t*t + (a-b)*t*t*t
+    var q = (1-t)*ys[i-1] + t*ys[i] + t*(1-t)*(a*(1-t)+b*t);
+    var q_ = (a + ys[i] - ys[i-1]) + 2*(b-2*a)*t + 3*(a-b)*t*t;
+    var q__ = 2*(b-2*a) + 6*(a-b)*t;
+    return [q, q_, q__];
+}
+
+function getNaturalKs (xs, ys, ks) {
+    var n = xs.length-1;
+    var A = zerosMat(n+1, n+2);
+
+    for(var i=1; i<n; i++)  // rows
+    {
+        A[i][i-1] = 1/(xs[i] - xs[i-1]);
+        A[i][i] = 2 * (1/(xs[i] - xs[i-1]) + 1/(xs[i+1] - xs[i])) ;
+        A[i][i+1] = 1/(xs[i+1] - xs[i]);
+        A[i][n+1] = 3*( (ys[i]-ys[i-1])/((xs[i] - xs[i-1])*(xs[i] - xs[i-1]))  +  (ys[i+1]-ys[i])/ ((xs[i+1] - xs[i])*(xs[i+1] - xs[i])) );
+    }
+
+    A[0][0] = 2/(xs[1] - xs[0]);
+    A[0][1] = 1/(xs[1] - xs[0]);
+    A[0][n+1] = 3 * (ys[1] - ys[0]) / ((xs[1]-xs[0])*(xs[1]-xs[0]));
+
+    A[n][n-1] = 1/(xs[n] - xs[n-1]);
+    A[n][n] = 2/(xs[n] - xs[n-1]);
+    A[n][n+1] = 3 * (ys[n] - ys[n-1]) / ((xs[n]-xs[n-1])*(xs[n]-xs[n-1]));
+
+    return solve(A, ks);
+}
+
+
+function solve (A, ks) {
+    var m = A.length;
+    for(var k=0; k<m; k++)  // column
+    {
+        // pivot for column
+        var i_max = 0; var vali = Number.NEGATIVE_INFINITY;
+        for(var i=k; i<m; i++) if(A[i][k]>vali) { i_max = i; vali = A[i][k];}
+        swapRows(A, k, i_max);
+
+        // for all rows below pivot
+        for(var i=k+1; i<m; i++)
+        {
+            for(var j=k+1; j<m+1; j++)
+                A[i][j] = A[i][j] - A[k][j] * (A[i][k] / A[k][k]);
+            A[i][k] = 0;
+        }
+    }
+    for(var i=m-1; i>=0; i--) // rows = columns
+    {
+        var v = A[i][m] / A[i][i];
+        ks[i] = v;
+        for(var j=i-1; j>=0; j--) // rows
+        {
+            A[j][m] -= A[j][i] * v;
+            A[j][i] = 0;
+        }
+    }
+    return ks;
+}
+
+function zerosMat (r,c) {
+    var A = [];
+    for(var i=0; i<r; i++) {
+        A.push([]);
+        for(var j=0; j<c; j++) A[i].push(0);
+    }
+    return A;
+}
+
+function swapRows (m, k, l) {
+    var p = m[k]; m[k] = m[l]; m[l] = p;
+}
+
+function parameteriseFunctionWRTt(pts) {
+
+    var xVals = stripX(pts);
+    var s1 = smooth(getUniformIndexes(xVals), xVals);
+
+    var yVals = stripY(pts);
+    var s2 = smooth(getUniformIndexes(yVals), yVals);
+
+    return [s1, s2]
+}
+
+function lengthRateOfChangeFunc(tVal, fx, fy) {
+    var dxdt = getDerivative(fx, tVal, 1);
+    var dydt = getDerivative(fy, tVal, 1);
+    var val = Math.sqrt( Math.pow(dxdt, 2) + Math.pow(dydt, 2) );
+    return val
+}
+
+//returns integral at each val in tVals
+function cumulativeTrapz(fx, fy, tVals, stepsBetweenPts) {
+    var result = [];
+    result.push(0);//skip first point
+    var i = 1;//skip first point
+    var cumSum = 0;
+    for (; i < tVals.length; i++) {
+        var currPt = tVals[i];
+        var prevPt = tVals[i-1];
+        var step = parseFloat(currPt - prevPt)/parseFloat(stepsBetweenPts);
+        var stepSum = 0;
+        for (var j = 0; j < stepsBetweenPts; j++) {
+            var currT = prevPt + (step*j);
+            var y1 = lengthRateOfChangeFunc(currT, fx, fy);
+            var nextT;
+            if(i == tVals.length-1 && j == stepsBetweenPts-1) {//hacky fix to deal with edge of spline
+                nextT = prevPt + (step*(j+1)) - 0.002;
+            } else {
+                nextT = prevPt + (step*(j+1));
+            }
+            var y2 = lengthRateOfChangeFunc(nextT, fx, fy);
+            var area = 0.5 * (y1 + y2) * (nextT-currT)
+            stepSum += area;
+        }
+        cumSum += stepSum;
+        result.push(cumSum);
+    }
+    return result;
+}
+
+
+function calculateCurvatureAtPoints(fx_arcLength, fy_arcLength, tVal) {
+    var x = getDerivative(fx_arcLength, tVal, 0);
+    var x_ = getDerivative(fx_arcLength, tVal, 1);
+    var x__ = getDerivative(fx_arcLength, tVal, 2);
+    var y = getDerivative(fy_arcLength, tVal, 0);
+    var y_ = getDerivative(fy_arcLength, tVal, 1);
+    var y__ = getDerivative(fy_arcLength, tVal, 2);
+    var curvature = Math.abs(x_* y__ - y_* x__) / Math.pow(Math.pow(x, 2) + Math.pow(y, 2), 3.0 / 2.0);
+    return 1/curvature;
+}
+
 
 function calcPolygonArea(vertices) {
     var total = 0;
@@ -850,12 +1038,23 @@ function drawTriangleWithColour(ctx, tri, strokeColour, fillColour, enableFill) 
     }
 }
 
-function drawKeypoints(interactiveCanvasContext, keypoints) {
+function drawKeypointsWithoutScale(interactiveCanvasContext, keypoints, stroke) {
     interactiveCanvasContext.beginPath();
-    interactiveCanvasContext.strokeStyle = "blue";
+    interactiveCanvasContext.strokeStyle = stroke;
     for (var i = 0; i < keypoints.length; i++) {
         var currentKeypoint = keypoints[i];
-        interactiveCanvasContext.rect(currentKeypoint.x*g_mult, currentKeypoint.y*g_mult, 1, 1);
+        interactiveCanvasContext.rect(currentKeypoint.x, currentKeypoint.y, 4, 4);
+    }
+    interactiveCanvasContext.closePath();
+    interactiveCanvasContext.stroke();
+}
+
+function drawKeypoints(interactiveCanvasContext, keypoints, stroke) {
+    interactiveCanvasContext.beginPath();
+    interactiveCanvasContext.strokeStyle = stroke;
+    for (var i = 0; i < keypoints.length; i++) {
+        var currentKeypoint = keypoints[i];
+        interactiveCanvasContext.rect(currentKeypoint.x*g_mult, currentKeypoint.y*g_mult, 4, 4);
     }
     interactiveCanvasContext.closePath();
     interactiveCanvasContext.stroke();
@@ -1195,7 +1394,6 @@ function getNonOccludedKeypoints(keypoints, layers) {
 }
 
 function drawUiLayer(canvasContext, keypoints, triangles, layerColour) {
-    drawKeypoints(canvasContext, keypoints);
     drawTriangles(canvasContext, triangles, layerColour);
 }
 
@@ -1482,14 +1680,44 @@ function buildInteractiveTriangleByReferenceTriangleMap(filteredTrianglesWithInd
     return interactiveTriangleByReferenceTriangleMapInLayerArray;
 }
 
-function draw() {
+function getUniformIndexes(inputArr) {
+    var result = [];
+    for (var i = 0; i < inputArr.length; i++) {
+        result.push(i)
+    }
+    return result;
+}
 
-    var s = Smooth([1, 4, 3, 4, 3], {
-        method: 'sinc',
-        sincFilterSize: 100,
-        sincWindow: function(x) { return Math.exp(-x * x); }
-    });
-    plotThis(s, 1, 3, 4);
+
+function getCirclePoints() {
+    var r = 3;
+    var result = [];
+    var n = 20;
+    for (var i = 0; i < n; i++) {
+        result.push({
+                x: math.cos(4*Math.PI/n*i)*r + 4,
+                y: math.sin(4*Math.PI/n*i)*r + 4
+            });
+    }
+    return result;
+}
+
+function draw() {
+    g_initPts = getCirclePoints();
+    var xArr = stripX(g_initPts);
+    var yArr = stripY(g_initPts);
+    var fx = smooth(getUniformIndexes(xArr), xArr);
+    var fy = smooth(getUniformIndexes(yArr), yArr);
+
+    var tListReparametrised = cumulativeTrapz(fx, fy, getUniformIndexes(xArr), 1);
+    fx = smooth(tListReparametrised, xArr);
+    fy = smooth(tListReparametrised, yArr);
+    var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
+
+    ctx.clearRect(0, 0, 800, 800);
+    plotThis(fx, fy, g_start, g_end, 17);
+    //drawKeypointsWithoutScale(ctx, [g_globalState.currentMouseCanvasPosition], "red");
+    window.requestAnimationFrame(draw);
     return [];
 }
 
@@ -1976,9 +2204,10 @@ function getActiveLayerWithCanvasPosition(canvasMousePosition, layers, noMatchRe
 }
 
 function handleMouseDownOnCanvas(pageMousePosition, canvasMousePosition) {
-
+    logged = false;
     g_globalState.pageMouseDownPosition = pageMousePosition;
     g_globalState.temporaryAppliedTransformations.transformationCenterPoint = canvasMousePosition;
+    g_globalState.currentMouseCanvasPosition  = canvasMousePosition;
     //FIXME: set the active canvas
 
     const currentActiveLayer = g_globalState.activeCanvas.activeLayer;
@@ -2008,6 +2237,7 @@ function handleMouseDownOnCanvas(pageMousePosition, canvasMousePosition) {
             console.log("ERROR: Invalid state.");
             break;
     }
+    draw();
 }
 
 function applyTransformationEffects(state) {
@@ -2194,25 +2424,76 @@ function animate() {
     window.requestAnimationFrame(animateStep);
 }
 
-function getThePoints(f, x1, x2, subDiv) {
-    var increment = ((x2 - x1)*1.0)/(subDiv*1.0);
+function getThePoints(fx, fy, t1, t2, subDiv) {
+    var increment = ((t2 - t1)*1.0)/(subDiv*1.0);
     var result = [];
     for (var i = 0; i < subDiv; i++) {
-        var x = x1*1.0 + i*increment;
-        result.push({x: x, y: f(x)});
+        var t = t1*1.0 + i*increment;
+        result.push({x: getDerivative(fx, t, 0), y: getDerivative(fy, t, 0)});
     }
-    debugger;
     return result;
 }
 
-function plotThis(f, x1, x2, subDiv) {
-    var pts = getThePoints(f, x1, x2, subDiv);
+function drawFirstDerivative(ctx, tVal, pt, fx, fy) {
+    ctx.strokeStyle = "green"
+    drawDerivative(ctx, tVal, pt, fx, fy, 1)
+}
+
+function drawDerivative(ctx, tVal, pt, fx, fy, der) {
+    var dxdt = getDerivative(fx, tVal, der);
+    var dydt = getDerivative(fy, tVal, der);
+    ctx.beginPath();
+    var mult = 40;
+    var x, y;
+    var total = Math.abs(dxdt)+Math.abs(dydt);
+    var ratioX = dxdt/total;
+    var ratioY = dydt/total;
+    x = pt.x //- (ratioX*mult);
+    y = pt.y //- (ratioY*mult);
+    ctx.moveTo(x, y);
+    x = pt.x + (ratioX*mult);
+    y = pt.y + (ratioY*mult);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+}
+
+function drawSecondDerivative(ctx, tVal, pt, fx, fy) {
+    ctx.strokeStyle = "blue"
+    drawDerivative(ctx, tVal, pt, fx, fy, 2)
+}
+
+var logged = false;
+
+function drawCurvature(ctx, pt, pts, fx, fy, tVal) {
+    var curvature = calculateCurvatureAtPoints(fx, fy, tVal);
+    console.log(curvature);
+}
+
+var percentageDone = 0.01;
+function plotThis(fx, fy, t1, t2, subDiv) {
+    if (percentageDone > .99) {
+        percentageDone = .01
+    }
+    var pts = getThePoints(fx, fy, t1, t2, subDiv);
+
     var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
-    drawKeypoints(ctx, pts);
+    //drawKeypoints(ctx, pts, "blue");
+    drawKeypoints(ctx, g_initPts, "green");
+    //var xpt = g_globalState.currentMouseCanvasPosition.x;
+    var tVal = (((t2-t1)*percentageDone) + t1);
+    var pt = {
+        x: getDerivative(fx, tVal, 0)*g_mult,
+        y: getDerivative(fy, tVal, 0)*g_mult
+    };
+    drawKeypointsWithoutScale(ctx, [pt], "blue");
+    drawFirstDerivative(ctx, tVal, pt, fx, fy);
+    drawSecondDerivative(ctx, tVal, pt, fx, fy);
+    drawCurvature(ctx, pt, pts, fx, fy, tVal);
     ctx.strokeStyle = "red";
     ctx.beginPath();
     drawPolygonPath(ctx, pts);
     ctx.stroke();
+    percentageDone += .001;
 }
 
 function init() {

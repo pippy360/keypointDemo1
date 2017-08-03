@@ -298,8 +298,8 @@ h2 {
 }
 
 .interactiveCanvasWrapper {
-    width: 280px;
-    height: 280px;
+    width: 400px;
+    height: 400px;
     cursor: pointer;
     touch-action: none;
 }
