@@ -18,7 +18,7 @@ var g_drawingOptions = {
     drawReferenceCanvasUiLayer: true,
 };
 
-var g_mult = 30;
+var g_mult = 6;
 var g_initPts = [
     {x: 0, y: 0},
     {x: 1, y: 1},
@@ -30,7 +30,7 @@ var g_initPts = [
     {x: 7, y: 3},
     {x: 8, y: 5},
 ];
-var g_start=1;
+var g_start=3;
 var g_end=19;
 //
 // consts
@@ -564,7 +564,6 @@ function cumulativeTrapz(fx, fy, tVals, stepsBetweenPts) {
 
 
 function calculateCurvatureAtPoints(fx_arcLength, fy_arcLength, tVal) {
-    debugger;
     var x_ = getDerivative(fx_arcLength, tVal, 1);
     var x__ = getDerivative(fx_arcLength, tVal, 2);
     var y_ = getDerivative(fy_arcLength, tVal, 1);
@@ -1691,7 +1690,7 @@ function getUniformIndexes(inputArr) {
 function getCirclePoints() {
     var r = 3;
     var result = [];
-    var n = 20;
+    var n = 10;
     for (var i = 0; i < n; i++) {
         result.push({
                 x: math.cos(4*Math.PI/n*i)*r + 4,
@@ -1701,24 +1700,129 @@ function getCirclePoints() {
     return result;
 }
 
-function draw() {
+function frame(percent, inputPoints) {
     g_initPts = getCirclePoints();
-    var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix((1+2*percentageDone), 1));
-    g_initPts = transformed;
-    var xArr = stripX(g_initPts);
-    var yArr = stripY(g_initPts);
+
+    var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix((1+2*percent), 1));
+    //var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix(1, (1+2*percent)));
+    var g_initPts2 = transformed;
+    var xArr = stripX(g_initPts2);
+    var yArr = stripY(g_initPts2);
     var fx = smooth(getUniformIndexes(xArr), xArr);
     var fy = smooth(getUniformIndexes(yArr), yArr);
+
+    //getTValueAtPoint(fx, fy, g_initPts[3]);
 
     var tListReparametrised = cumulativeTrapz(fx, fy, getUniformIndexes(xArr), 1);
     fx = smooth(tListReparametrised, xArr);
     fy = smooth(tListReparametrised, yArr);
     var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
 
-    ctx.clearRect(0, 0, 800, 800);
-    plotThis(fx, fy, g_start, g_end, 17);
+    ctx.clearRect(0, 0, 1200, 1200);
+    var subDiv = 8;
+    var t1 = g_start;
+    var t2 = g_end;
+    var pts = getThePoints(fx, fy, g_start, g_end, subDiv);
+
+    var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
+    //drawKeypoints(ctx, pts, "blue");
+    drawKeypoints(ctx, g_initPts2, "green");
+    drawKeypoints(ctx, [g_initPts2[5]], "black");
+    //var xpt = g_globalState.currentMouseCanvasPosition.x;
+    var tVal = tListReparametrised[5];
+    var pt = {
+        x: getDerivative(fx, tVal, 0)*g_mult,
+        y: getDerivative(fy, tVal, 0)*g_mult
+    };
+    drawKeypointsWithoutScale(ctx, [pt], "blue");
+    drawFirstDerivative(ctx, tVal, pt, fx, fy);
+    drawSecondDerivative(ctx, tVal, pt, fx, fy);
+    drawCurvature(ctx, pt, pts, fx, fy, tVal);
+    ctx.strokeStyle = "red";
+    ctx.beginPath();
+    drawPolygonPath(ctx, pts);
+    ctx.stroke();
+
+
     //drawKeypointsWithoutScale(ctx, [g_globalState.currentMouseCanvasPosition], "red");
-    window.requestAnimationFrame(draw);
+    return calculateCurvatureAtPoints(fx, fy, tVal);
+}
+
+var xAxis = [2.622884295731352, 2.737197175179041, 2.854110209731442, 2.9736246941454385, 3.0957416362682686, 3.220461779450507,
+    3.347785623493734, 3.4777134442079807, 3.6102453116536313, 3.745381107141165, 3.88312053906052, 4.023463157609617,
+    4.166408368489181, 4.311955445628309, 4.460103543002288, 4.610851705601488, 4.7641988796068695, 4.92014392182489,
+    5.07868560843166, 5.239822643073183, 5.403553664365888, 5.569877252838838, 5.738791937356462, 5.910296201058242,
+    6.084388486849178, 6.261067202473113, 6.440330725198061, 6.6221774061417005, 6.806605574262353, 6.993613540039701,
+    7.1831995988672475, 7.375362034177648, 7.570099120319709, 7.7674091252054716, 7.9672903127435735, 8.169740945074716,
+    8.374759284623282, 8.582343595978667, 8.792492147618505, 9.005203213485405, 9.220475074427757, 9.438306019514537,
+    9.65869434723326, 9.881638366579613, 10.107136398046627, 10.335186774520771, 10.565787842091666, 10.798937960781977,
+    11.034635505202926, 11.272878865141292, 11.51366644608267, 11.756996669675857, 12.002867974142436, 12.251278814636079,
+    12.502227663554788, 12.755713010809911, 13.011733364055077, 13.270287248878098, 13.531373208958442, 13.794989806193245,
+    14.061135620793914, 14.329809251355782, 14.60100931490282, 14.87473444690943, 15.150983301300963, 15.429754550434893,
+    15.711046885064015, 15.994859014283033, 16.281189665460438, 16.570037584156008, 16.861401534026136, 17.155280296717024,
+    17.451672671747957, 17.750577476384386, 18.051993545502743, 18.35591973144664, 18.66235490387683, 18.97129794961398,
+    19.282747772475876, 19.59670329310952, 19.913163448818633, 20.232127193386816, 20.553593496897374, 20.877561345550067,
+    21.20402974147483, 21.532997702543575, 21.864464262179624, 22.198428469165943, 22.534889387452015, 22.873846095959372,
+    23.215297688386897, 23.559243273015277, 23.90568197251163, 24.254612923733607, 24.606035277534136, 24.959948198566288,
+    25.3163508650888, 25.675242468772108];
+
+var yAxis = [2.4522501999171387, 2.3957761206396433, 2.3416070519983103, 2.289612604980009, 2.239671762019631, 2.1916720577747535,
+    2.145508844485746, 2.1010846318512044, 2.0583084927026936, 2.0170955269144693, 1.977366376966762, 1.9390467894220733,
+    1.9020672172955773, 1.8663624589212282, 1.8318713294506441, 1.7985363615845245, 1.766303532537524, 1.735122014585765,
+    1.7049439468496532, 1.675724226229087, 1.647420315639735, 1.619992067901553, 1.5934015638088435, 1.5676129630675815,
+    1.542592366923731, 1.5183076914279725, 1.4947285503900967, 1.4718261471715837, 1.449573174549729, 1.427943721961825,
+    1.406913189505032, 1.3864582081272605, 1.3665565654978422, 1.3471871370944324, 1.3283298220854254, 1.309965483625469,
+    1.292075893216134, 1.2746436788148174, 1.257652276402783, 1.241085884748491, 1.2249294231250618, 1.2091684917612158,
+    1.1937893348236668, 1.178778805745774, 1.1641243347324948, 1.1498138982856192, 1.1358359906057987, 1.1221795967394033,
+    1.108834167348684, 1.0957895949932237, 1.0830361918193805, 1.0705646685623647, 1.0583661147728407, 1.0464319801866104,
+    1.0347540571620437, 1.023324464115425, 1.0121356298896254, 1.001180278996124, 0.9904514176747561, 0.9799423207195561,
+    0.9696465190227068, 0.9595577877919933, 0.9496701354002577, 0.9399777928282265, 0.930475203664737, 0.9211570146308252,
+    0.9120180665964144, 0.9030533860604113, 0.8942581770669921, 0.8856278135326211, 0.8771578319600435, 0.8688439245169742,
+    0.8606819324587414, 0.8526678398753541, 0.8447977677447873, 0.8370679682754001, 0.8294748195214463, 0.8220148202566641,
+    0.8146845850918564, 0.8074808398232093, 0.8004004169989258, 0.7934402516924935, 0.7865973774716122, 0.779868922552443,
+    0.7732521061294757, 0.7667442348718532, 0.7603426995775784, 0.7540449719774275, 0.7478486016810009, 0.7417512132576405,
+    0.7357505034454548, 0.7298442384820203, 0.7240302515507085, 0.7183064403369318, 0.7126707646888857, 0.707121244377715,
+    0.7016559569522526, 0.6962730356837973]
+
+function toPoints(pts) {
+    var result = [];
+    for (var i = 0; i < pts.length; i++) {
+        result.push({
+            x: i,
+            y: pts[i]
+        })
+    }
+    return result;
+}
+
+function draw() {
+    var result = [];
+    // for (var i = 0; i < 10000; i++) {
+    //     if (percentageDone > .99) {
+    //         break;
+    //     }
+    //     var res = frame(percentageDone);
+    //     result.push(res);
+    //     percentageDone += .01;
+    // }
+
+    var pts1 = toPoints(xAxis);
+    var pts2 = toPoints(yAxis);
+
+    var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
+    ctx.clearRect(0, 0, 1200, 1200);
+    ctx.beginPath();
+    drawPolygonPath(ctx, pts1);
+    debugger;
+    ctx.strokeStyle = "red";
+    ctx.stroke();
+    ctx.beginPath();
+    drawPolygonPath(ctx, pts2);
+    debugger;
+    ctx.strokeStyle = "blue";
+    ctx.stroke();
+
+    //window.requestAnimationFrame(draw);
     return [];
 }
 
@@ -2498,29 +2602,6 @@ function drawCurvature(ctx, pt, pts, fx, fy, tVal) {
 
 var percentageDone = 0.01;
 function plotThis(fx, fy, t1, t2, subDiv) {
-    if (percentageDone > .99) {
-        percentageDone = .01
-    }
-    var pts = getThePoints(fx, fy, t1, t2, subDiv);
-
-    var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
-    //drawKeypoints(ctx, pts, "blue");
-    drawKeypoints(ctx, g_initPts, "green");
-    //var xpt = g_globalState.currentMouseCanvasPosition.x;
-    var tVal = (((t2-t1)*percentageDone) + t1);
-    var pt = {
-        x: getDerivative(fx, tVal, 0)*g_mult,
-        y: getDerivative(fy, tVal, 0)*g_mult
-    };
-    drawKeypointsWithoutScale(ctx, [pt], "blue");
-    //drawFirstDerivative(ctx, tVal, pt, fx, fy);
-    //drawSecondDerivative(ctx, tVal, pt, fx, fy);
-    drawCurvature(ctx, pt, pts, fx, fy, tVal);
-    ctx.strokeStyle = "red";
-    ctx.beginPath();
-    drawPolygonPath(ctx, pts);
-    ctx.stroke();
-    percentageDone += .001;
 }
 
 function init() {
