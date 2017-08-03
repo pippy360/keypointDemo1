@@ -564,13 +564,12 @@ function cumulativeTrapz(fx, fy, tVals, stepsBetweenPts) {
 
 
 function calculateCurvatureAtPoints(fx_arcLength, fy_arcLength, tVal) {
-    var x = getDerivative(fx_arcLength, tVal, 0);
+    debugger;
     var x_ = getDerivative(fx_arcLength, tVal, 1);
     var x__ = getDerivative(fx_arcLength, tVal, 2);
-    var y = getDerivative(fy_arcLength, tVal, 0);
     var y_ = getDerivative(fy_arcLength, tVal, 1);
     var y__ = getDerivative(fy_arcLength, tVal, 2);
-    var curvature = Math.abs(x_* y__ - y_* x__) / Math.pow(Math.pow(x, 2) + Math.pow(y, 2), 3.0 / 2.0);
+    var curvature = Math.abs(x_* y__ - y_* x__) / Math.pow(Math.pow(x_, 2) + Math.pow(y_, 2), 3.0 / 2.0);
     return 1/curvature;
 }
 
@@ -1703,7 +1702,7 @@ function getCirclePoints() {
 }
 
 function draw() {
-    g_initPts = getCirclePoints();
+    //g_initPts = getCirclePoints();
     var xArr = stripX(g_initPts);
     var yArr = stripY(g_initPts);
     var fx = smooth(getUniformIndexes(xArr), xArr);
@@ -2466,7 +2465,33 @@ var logged = false;
 
 function drawCurvature(ctx, pt, pts, fx, fy, tVal) {
     var curvature = calculateCurvatureAtPoints(fx, fy, tVal);
-    console.log(curvature);
+
+    //console.log(curvature);
+
+    var dxdt = getDerivative(fx, tVal, 1);
+    var dydt = getDerivative(fy, tVal, 1);
+    ctx.beginPath();
+    var mult = curvature*10;
+    var x, y;
+    var total = Math.abs(dxdt)+Math.abs(dydt);
+    var ratioX = dxdt/total;
+    var ratioY = dydt/total;
+    x = pt.x //- (ratioX*mult);
+    y = pt.y //- (ratioY*mult);
+    ctx.moveTo(x, y);
+    var slope = -1.0*(ratioX/ratioY)
+    var total2 = (Math.abs(slope)+1);
+    var rY = 1/total2;
+    x = pt.x + (rY*mult);
+    var rX = slope/total2;
+    y = pt.y + (rX*mult);
+    console.log(rY + " : " + rX + " = " + (Math.abs(rX) + Math.abs(rY)));
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = "purple"
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, mult, 0, 2*Math.PI)
+    ctx.stroke();
 }
 
 var percentageDone = 0.01;
@@ -2486,8 +2511,8 @@ function plotThis(fx, fy, t1, t2, subDiv) {
         y: getDerivative(fy, tVal, 0)*g_mult
     };
     drawKeypointsWithoutScale(ctx, [pt], "blue");
-    drawFirstDerivative(ctx, tVal, pt, fx, fy);
-    drawSecondDerivative(ctx, tVal, pt, fx, fy);
+    //drawFirstDerivative(ctx, tVal, pt, fx, fy);
+    //drawSecondDerivative(ctx, tVal, pt, fx, fy);
     drawCurvature(ctx, pt, pts, fx, fy, tVal);
     ctx.strokeStyle = "red";
     ctx.beginPath();
