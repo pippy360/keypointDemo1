@@ -1276,7 +1276,7 @@ function filterInvalidTrianglesForAllSteps(triangles, validKeypoints) {
 
 function drawPolygonPath(ctx, inPoints) {
 
-    ctx.moveTo(inPoints[0].x, inPoints[0].y);
+    ctx.moveTo(inPoints[0].x*g_mult, inPoints[0].y*g_mult);
     for (var i = 1; i < inPoints.length; i++) {//i = 1 to skip first point
         var currentPoint = inPoints[i];
         ctx.lineTo(currentPoint.x*g_mult, currentPoint.y*g_mult);
