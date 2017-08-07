@@ -2501,34 +2501,6 @@ function _debug_addlayer(imageSrc) {
     };
 }
 
-var start = 0;
-function animateStep(timestamp) {
-    if (!start) start = timestamp;
-    var progress = timestamp - start;
-    temporaryAppliedTransformations.rotation = progress / 100 % 360;
-    temporaryAppliedTransformations.uniformScale = progress / 100000 % 360;
-    console.log(progress % 360);
-
-    if (temporaryAppliedTransformations.uniformScale < 1) {
-        window.requestAnimationFrame(animateStep);
-    }
-    g_skipListGen = true;
-    g_forceApplyTransformations = true;
-    draw();
-    g_forceApplyTransformations = false;
-    g_skipListGen = false;
-}
-
-
-function animate() {
-    temporaryAppliedTransformations.transformationCenterPoint = {
-        x: 280 / 2,
-        y: 280 / 2
-    };
-
-    window.requestAnimationFrame(animateStep);
-}
-
 function getThePoints(fx, fy, t1, t2, subDiv) {
     var increment = ((t2 - t1)*1.0)/(subDiv*1.0);
     var result = [];
