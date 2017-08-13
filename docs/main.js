@@ -1701,9 +1701,8 @@ function getCirclePoints() {
 }
 
 function frame(percent, inputPoints) {
-    g_initPts = getCirclePoints();
 
-    var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix((1.5+2*percent), 1));
+    var transformed = applyTransformationMatrixToAllKeypointsObjects(inputPoints, getScaleMatrix((1.5+2*percent), 1));
     //var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix(1, (1+2*percent)));
     var g_initPts2 = transformed;
     var xArr = stripX(g_initPts2);
@@ -1784,8 +1783,11 @@ var yAxis = [2.4522501999171387, 2.3957761206396433, 2.3416070519983103, 2.28961
     0.7357505034454548, 0.7298442384820203, 0.7240302515507085, 0.7183064403369318, 0.7126707646888857, 0.707121244377715,
     0.7016559569522526, 0.6962730356837973]
 
-var secondOnePushedOverSlightly1point5 =[1.542592366923731, 1.5183076914279725, 1.4947285503900967, 1.4718261471715837, 1.449573174549729, 1.427943721961825, 1.406913189505032, 1.3864582081272605, 1.3665565654978427, 1.347187137094433, 1.3283298220854263, 1.3099654836254677, 1.2920758932161356, 1.274643678814819, 1.2576522764027827, 1.2410858847484918, 1.2249294231250623, 1.209168491761218, 1.1937893348236681, 1.1787788057457742, 1.1641243347324945, 1.1498138982856194, 1.1358359906057987, 1.1221795967394033, 1.108834167348684, 1.095789594993223, 1.08303619181938, 1.070564668562365, 1.0583661147728403, 1.0464319801866118, 1.0347540571620437, 1.0233244641154255, 1.012135629889626, 1.001180278996125, 0.9904514176747565, 0.9799423207195553, 0.9696465190227074, 0.9595577877919943, 0.9496701354002576, 0.9399777928282269, 0.930475203664737, 0.9211570146308259, 0.9120180665964147, 0.9030533860604117, 0.8942581770669906, 0.8856278135326207, 0.8771578319600428, 0.868843924516974, 0.8606819324587424, 0.8526678398753551, 0.844797767744788, 0.837067968275401, 0.8294748195214467, 0.8220148202566642, 0.8146845850918573, 0.8074808398232094, 0.8004004169989261, 0.7934402516924933, 0.7865973774716123, 0.7798689225524432, 0.7732521061294743, 0.7667442348718533, 0.7603426995775783, 0.7540449719774283, 0.7478486016810009, 0.7417512132576413, 0.7357505034454548, 0.7298442384820206, 0.7240302515507089, 0.7183064403369325, 0.7126707646888858, 0.7071212443777152, 0.7016559569522536, 0.6962730356837976, 0.6909706675965874, 0.6857470915799128, 0.6806005965779909, 0.6755295198539395, 0.6705322453244004, 0.6656072019615049, 0.6607528622590924, 0.6559677407602094, 0.6512503926431025, 0.6465994123630487, 0.6420134323474934, 0.6374911217421093, 0.6330311852055074, 0.6286323617504345, 0.6242934236294061, 0.620013175262832, 0.6157904522077676, 0.6116241201655509, 0.607513074026621, 0.6034562369509407, 0.5994525594824986, 0.5955010186964481, 0.5916006173774936, 0.5877503832282335, 0.5839493681061894];
+var secondOnePushedOverSlightly1point5;
 var secondOneButTheBetterOne =[6.084388486849178, 6.261067202473113, 6.440330725198061, 6.6221774061417005, 6.806605574262353, 6.993613540039701, 7.1831995988672475, 7.375362034177648, 7.570099120319704, 7.767409125205466, 7.967290312743572, 8.169740945074702, 8.374759284623272, 8.582343595978664, 8.79249214761851, 9.0052032134854, 9.220475074427766, 9.43830601951453, 9.658694347233254, 9.881638366579612, 10.107136398046629, 10.335186774520766, 10.565787842091677, 10.798937960781984, 11.03463550520293, 11.272878865141283, 11.513666446082672, 11.756996669675846, 12.002867974142433, 12.25127881463609, 12.502227663554804, 12.755713010809897, 13.011733364055072, 13.270287248878075, 13.531373208958426, 13.794989806193213, 14.061135620793914, 14.329809251355798, 14.601009314902829, 14.874734446909445, 15.150983301300963, 15.429754550434893, 15.711046885063997, 15.99485901428302, 16.28118966546043, 16.57003758415601, 16.86140153402613, 17.155280296717013, 17.451672671747954, 17.750577476384407, 18.051993545502725, 18.355919731446612, 18.662354903876828, 18.97129794961398, 19.282747772475872, 19.59670329310953, 19.913163448818633, 20.232127193386784, 20.553593496897342, 20.877561345550014, 21.204029741474855, 21.532997702543536, 21.86446426217959, 22.198428469165943, 22.534889387452022, 22.873846095959344, 23.21529768838689, 23.559243273015287, 23.905681972511626, 24.254612923733585, 24.606035277534122, 24.959948198566305, 25.31635086508876, 25.67524246877208, 26.036622214505567, 26.40048932020534, 26.766843016623394, 27.13568254715803, 27.507007167665314, 27.880816146272185, 28.257108763190825, 28.635884310534998, 29.017142092137554, 29.400881423369864, 29.78710163096306, 30.175802052831216, 30.566982037895773, 30.96064094591246, 31.356778147300208, 31.75539302297147, 32.15648496416492, 32.560053372280265, 32.96609765871457, 33.374617244701334, 33.785611561151015, 34.199080048493975, 34.615022156525455, 35.03343734425234, 35.45432507974249] ;
+
+var rateOfChangeGraph1 = null;
+var rateOfChangeGraph2 = null;
 
 function toPoints(pts) {
     var result = [];
@@ -1891,45 +1893,141 @@ function chopPts(pts, start, end, step) {
     return part;
 }
 
+function calcMinArray(pts1, pts2) {
+
+    var minDiff = 9999999;//FIXME:
+    var step = 0.01;
+    var part1 = chopPts(pts1, 1, 5, .4);
+    for (var i = 0.01; i < 1; i += step) {
+        var start2 = 1+ (40*i);
+        var part2 = chopPts(pts2, start2, start2+4, .4);
+        var diff = calcDifference(part1, part2);
+        if (diff < minDiff) {
+            minDiff = diff
+        }
+    }
+    return minDiff;
+}
+
+var g_shape1 = null;
+var g_shape2 = null;
+
 // percentageDone = 0;
 function draw() {
-    // percentageDone = 0;
-    // var result = [];
-    // for (var i = 0; i < 10000; i++) {
-    //     if (percentageDone > .99) {
-    //         break;
-    //     }
-    //     var res = frame(percentageDone);
-    //     result.push(res);
-    //     percentageDone += .01;
-    // }
-    // debugger;
     if (percentageDone > .99) {
-        percentageDone = 0;
+        return;
     }
-    var pts1 = toPoints(secondOneButTheBetterOne);
-    var pts2 = toPoints(xAxis);
-
+    var shape1Steps = 10;
+    var shape2Steps = 10;
+    //init vars
     var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
     ctx.clearRect(0, 0, 1200, 1200);
     ctx.beginPath();
-    var part1 = chopPts(pts1, 1, 5, .4);
-    drawPolygonPath(ctx, part1);
+    var pts1 = toPoints(rateOfChangeGraph1);
+    var pts2 = toPoints(rateOfChangeGraph2);
+
+
+    //console.log("Diff: " + calcDifference(part1, part2) + " Min: " + calcMinArray(pts1, pts2));
+    var totalNumberOfSteps = shape1Steps*shape2Steps;
+    var currnetStep = parseInt(percentageDone*totalNumberOfSteps);
+    var part1Scale = (currnetStep%shape1Steps)/shape1Steps;
+    var part2Scale = parseInt(currnetStep/shape1Steps)/shape2Steps;
+
+    //draw the points
+    pts1Draw = pts1;
+    pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getScaleMatrix(1, 5));
+    pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getTranslateMatrix(20, 20));
+    pts2Draw = pts2;
+    pts2Draw = applyTransformationMatrixToAllKeypointsObjects(pts2Draw, getScaleMatrix(1, 5));
+    pts2Draw = applyTransformationMatrixToAllKeypointsObjects(pts2Draw, getTranslateMatrix(20*part2Scale, 20));
+    ctx.stroke();
+    ctx.beginPath();
+    drawPolygonPath(ctx, pts1Draw);
     ctx.strokeStyle = "red";
     ctx.stroke();
     ctx.beginPath();
-
-    //pts2 = applyTransformationMatrixToAllKeypointsObjects(pts2, getTranslateMatrix(-24, 0));
-    var start2 = 1+ (40*percentageDone);
-    var part2 = chopPts(pts2, start2, start2+4, .4);
-    drawPolygonPath(ctx, part2);
-    console.log("Diff: " + calcDifference(part1, part2));
+    drawPolygonPath(ctx, pts2Draw);
     ctx.strokeStyle = "blue";
     ctx.stroke();
 
+    //draw the parts
+    //pts2 = applyTransformationMatrixToAllKeypointsObjects(pts2, getTranslateMatrix(-24, 0));
+    var part1 = chopPts(pts1, part1Scale, part1Scale+20, .4);
+    var part2 = chopPts(pts2, part2Scale, part2Scale+20, .4);
+
+    pts1Draw = part1;
+    pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getScaleMatrix(1, 5));
+    pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getTranslateMatrix(20*part1Scale, 20));
+    pts2Draw = part2;
+    pts2Draw = applyTransformationMatrixToAllKeypointsObjects(pts2Draw, getScaleMatrix(1, 5));
+    pts2Draw = applyTransformationMatrixToAllKeypointsObjects(pts2Draw, getTranslateMatrix(20*part2Scale, 20));
+
+    ctx.stroke();
+    ctx.beginPath();
+    drawPolygonPath(ctx, pts1Draw);
+    ctx.strokeStyle = "orange";
+
+    ctx.stroke();
+    ctx.beginPath();
+    drawPolygonPath(ctx, pts2Draw);
+    ctx.strokeStyle = "purple";
+    ctx.stroke();
+
+
+    //draw the shapes
+    ctx.beginPath();
+    drawPolygonPath(ctx, g_shape1);
+    ctx.stroke();
+    drawPolygonPath(ctx, g_shape2);
+    ctx.stroke();
+    drawKeypoints(ctx, [g_shape1[5]], "green");
+    drawKeypoints(ctx, [g_shape2[5]], "black");
+
     window.requestAnimationFrame(draw);
-    percentageDone += .01;
+    percentageDone += .001;
     return [];
+}
+
+function generateAllTheInfo() {
+    g_initPts = getCirclePoints();
+
+    var transformedToken1 = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix(1.3, 1/1.3));
+    var transformedToken2 = applyTransformationMatrixToAllKeypointsObjects(transformedToken1, getTranslateMatrix(0, 10));
+    //var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix(1, (1+2*percent)));
+    var g_initPts2 = transformedToken2;
+    g_shape1 = g_initPts;
+    g_shape1 = applyTransformationMatrixToAllKeypointsObjects(g_shape1, getTranslateMatrix(10, 10));
+    g_shape2 = transformedToken2;
+    var xArr = stripX(g_initPts2);
+    var yArr = stripY(g_initPts2);
+    var fx = smooth(getUniformIndexes(xArr), xArr);
+    var fy = smooth(getUniformIndexes(yArr), yArr);
+
+    var result = [];
+    percentageDone = 0;
+    result = [];
+    for (var i = 0; i < 10000; i++) {
+        if (percentageDone > .99) {
+            break;
+        }
+        var res = frame(percentageDone, g_shape1);
+        result.push(res);
+        percentageDone += .01;
+    }
+    rateOfChangeGraph1 = result
+    percentageDone = 0;
+    result = [];
+    for (var i = 0; i < 10000; i++) {
+        if (percentageDone > .99) {
+            break;
+        }
+        var res = frame(percentageDone, g_shape2);
+        result.push(res);
+        percentageDone += .01;
+    }
+    rateOfChangeGraph2 = result
+    percentageDone = 0;
+    draw();
 }
 
 // #     #                         ###
@@ -2024,8 +2122,7 @@ function mouseUpEvent() {
         g_globalState.isMouseDownAndClickedOnCanvas = false;
 
         //FIXME: finish this and extract to method
-        var triangleMapArray = draw();
-        generateOutputList(triangleMapArray);
+        draw();
     }
 }
 
@@ -2568,8 +2665,7 @@ function buildGlobalState() {
 function initAfterImageLoad() {
     g_globalState = buildGlobalState();
     setCurrnetOperation(enum_TransformationOperation.TRANSLATE);
-    var triangleMapArray = draw();
-    generateOutputList(triangleMapArray);
+    generateAllTheInfo();
     window.requestAnimationFrame(drawImageOutlineInternal);
 }
 
@@ -2648,34 +2744,34 @@ function drawSecondDerivative(ctx, tVal, pt, fx, fy) {
 var logged = false;
 
 function drawCurvature(ctx, pt, pts, fx, fy, tVal) {
-    var curvature = calculateCurvatureAtPoints(fx, fy, tVal);
-
-    //console.log(curvature);
-
-    var dxdt = getDerivative(fx, tVal, 1);
-    var dydt = getDerivative(fy, tVal, 1);
-    ctx.beginPath();
-    var mult = curvature*10;
-    var x, y;
-    var total = Math.abs(dxdt)+Math.abs(dydt);
-    var ratioX = dxdt/total;
-    var ratioY = dydt/total;
-    x = pt.x //- (ratioX*mult);
-    y = pt.y //- (ratioY*mult);
-    ctx.moveTo(x, y);
-    var slope = -1.0*(ratioX/ratioY)
-    var total2 = (Math.abs(slope)+1);
-    var rY = 1/total2;
-    x = pt.x + (rY*mult);
-    var rX = slope/total2;
-    y = pt.y + (rX*mult);
-    console.log(rY + " : " + rX + " = " + (Math.abs(rX) + Math.abs(rY)));
-    ctx.lineTo(x, y);
-    ctx.strokeStyle = "purple"
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(x, y, mult, 0, 2*Math.PI)
-    ctx.stroke();
+    // var curvature = calculateCurvatureAtPoints(fx, fy, tVal);
+    //
+    // //console.log(curvature);
+    //
+    // var dxdt = getDerivative(fx, tVal, 1);
+    // var dydt = getDerivative(fy, tVal, 1);
+    // ctx.beginPath();
+    // var mult = curvature*10;
+    // var x, y;
+    // var total = Math.abs(dxdt)+Math.abs(dydt);
+    // var ratioX = dxdt/total;
+    // var ratioY = dydt/total;
+    // x = pt.x //- (ratioX*mult);
+    // y = pt.y //- (ratioY*mult);
+    // ctx.moveTo(x, y);
+    // var slope = -1.0*(ratioX/ratioY)
+    // var total2 = (Math.abs(slope)+1);
+    // var rY = 1/total2;
+    // x = pt.x + (rY*mult);
+    // var rX = slope/total2;
+    // y = pt.y + (rX*mult);
+    // console.log(rY + " : " + rX + " = " + (Math.abs(rX) + Math.abs(rY)));
+    // ctx.lineTo(x, y);
+    // ctx.strokeStyle = "purple"
+    // ctx.stroke();
+    // ctx.beginPath();
+    // ctx.arc(x, y, mult, 0, 2*Math.PI)
+    // ctx.stroke();
 }
 
 var percentageDone = 0.01;
