@@ -1700,12 +1700,12 @@ function getCirclePoints() {
     return result;
 }
 
-function frame(percent, inputPoints) {
+function frame(inputPoints) {
 
-    var scale = 1/4+5*percent;
-    var transformed = applyTransformationMatrixToAllKeypointsObjects(inputPoints, getScaleMatrix(Math.sqrt(scale), 1 / Math.sqrt(scale)), 1);
+    var scale =1;// 1/4+5*percent;
+
     //var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix(1, (1+2*percent)));
-    var g_initPts2 = transformed;
+    var g_initPts2 = inputPoints;
     var xArr = stripX(g_initPts2);
     var yArr = stripY(g_initPts2);
     var fx = smooth(getUniformIndexes(xArr), xArr);
@@ -1716,32 +1716,29 @@ function frame(percent, inputPoints) {
     var tListReparametrised = cumulativeTrapz(fx, fy, getUniformIndexes(xArr), 1);
     fx = smooth(tListReparametrised, xArr);
     fy = smooth(tListReparametrised, yArr);
-    var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
 
-    ctx.clearRect(0, 0, 1200, 1200);
     var subDiv = 8;
     var t1 = g_start;
     var t2 = g_end;
     var pts = getThePoints(fx, fy, g_start, g_end, subDiv);
 
-    var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
     //drawKeypoints(ctx, pts, "blue");
-    drawKeypoints(ctx, g_initPts2, "green");
-    drawKeypoints(ctx, [g_initPts2[5]], "black");
+    // drawKeypoints(ctx, g_initPts2, "green");
+    // drawKeypoints(ctx, [g_initPts2[5]], "black");
     //var xpt = g_globalState.currentMouseCanvasPosition.x;
     var tVal = tListReparametrised[5];
     var pt = {
         x: getDerivative(fx, tVal, 0)*g_mult,
         y: getDerivative(fy, tVal, 0)*g_mult
     };
-    drawKeypointsWithoutScale(ctx, [pt], "blue");
-    drawFirstDerivative(ctx, tVal, pt, fx, fy);
-    drawSecondDerivative(ctx, tVal, pt, fx, fy);
-    drawCurvature(ctx, pt, pts, fx, fy, tVal);
-    ctx.strokeStyle = "red";
-    ctx.beginPath();
-    drawPolygonPath(ctx, pts);
-    ctx.stroke();
+    // drawKeypointsWithoutScale(ctx, [pt], "blue");
+    // drawFirstDerivative(ctx, tVal, pt, fx, fy);
+    // drawSecondDerivative(ctx, tVal, pt, fx, fy);
+    // drawCurvature(ctx, pt, pts, fx, fy, tVal);
+    // ctx.strokeStyle = "red";
+    // ctx.beginPath();
+    // drawPolygonPath(ctx, pts);
+    // ctx.stroke();
 
 
     //drawKeypointsWithoutScale(ctx, [g_globalState.currentMouseCanvasPosition], "red");
@@ -1914,80 +1911,66 @@ function calcMinArray(pts1, pts2) {
 
 var g_shape1 = null;
 var g_shape2 = null;
+var result1 = [];
+var result2 = [];
+
 
 // percentageDone = 0;
 function draw() {
     if (percentageDone > .99) {
         return;
     }
-    var shape1Steps = 8;
-    var shape2Steps = 8;
-    //init vars
+
     var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
     ctx.clearRect(0, 0, 1200, 1200);
-    ctx.beginPath();
-    var pts1 = toPoints(rateOfChangeGraph1);
-    var pts2 = toPoints(rateOfChangeGraph2);
-
-    //console.log("Diff: " + calcDifference(part1, part2) + " Min: " + calcMinArray(pts1, pts2));
-    var totalNumberOfSteps = shape1Steps*shape2Steps;
-    var currnetStep = parseInt(percentageDone*totalNumberOfSteps);
-    var part1Scale = (currnetStep%shape1Steps)/shape1Steps;
-    var part2Scale = parseInt(currnetStep/shape1Steps)/shape2Steps;
-
-    // ctx.rect(part1Scale*100, 0, 100, 100)
-
-    //draw the points
-    var scaleY = 20;
-    pts1Draw = pts1;
-    pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getScaleMatrix(1, scaleY));
-    // pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getTranslateMatrix(100*part1Scale - (100*part2Scale), 20));
-    pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getTranslateMatrix(-2, 20));
-    pts2Draw = pts2;
-    pts2Draw = applyTransformationMatrixToAllKeypointsObjects(pts2Draw, getScaleMatrix(1, scaleY));
-    pts2Draw = applyTransformationMatrixToAllKeypointsObjects(pts2Draw, getTranslateMatrix(0, 20));
-    ctx.stroke();
-    ctx.beginPath();
-    drawPolygonPath(ctx, pts1Draw);
-    ctx.strokeStyle = "red";
-    ctx.stroke();
-    ctx.beginPath();
-    drawPolygonPath(ctx, pts2Draw);
-    ctx.strokeStyle = "blue";
-    ctx.stroke();
-
-    //draw the parts
-    //pts2 = applyTransformationMatrixToAllKeypointsObjects(pts2, getTranslateMatrix(-24, 0));
-    var part1 = chopPts(pts1, part2Scale, part2Scale+.1, .4);
-    var part2 = chopPts(pts2, part1Scale, part1Scale+.1, .4);
-
-    pts1Draw = part1;
-    pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getScaleMatrix(1, scaleY));
-    pts1Draw = applyTransformationMatrixToAllKeypointsObjects(pts1Draw, getTranslateMatrix(100*part1Scale - (100*part2Scale), 20));
-    pts2Draw = part2;
-    pts2Draw = applyTransformationMatrixToAllKeypointsObjects(pts2Draw, getScaleMatrix(1, scaleY));
-    pts2Draw = applyTransformationMatrixToAllKeypointsObjects(pts2Draw, getTranslateMatrix(0, 20));
-
-    ctx.stroke();
-    ctx.beginPath();
-    drawPolygonPath(ctx, pts1Draw);
-    ctx.strokeStyle = "blue";
-
-    ctx.stroke();
-    ctx.beginPath();
-    drawPolygonPath(ctx, pts2Draw);
-    ctx.strokeStyle = "red";
-    ctx.stroke();
-
 
     //draw the shapes
+    var scale = .001+5*percentageDone;
+    var g_shape1_cpy = g_shape1;
+    g_shape1_cpy = applyTransformationMatrixToAllKeypointsObjects(g_shape1_cpy, getScaleMatrix(2,2));
+    g_shape1_cpy = applyTransformationMatrixToAllKeypointsObjects(g_shape1_cpy, getScaleMatrix(Math.sqrt(scale), 1/Math.sqrt(scale)));
+
+    ctx.strokeStyle = "red"
+    drawPolygonPath(ctx, g_shape1_cpy);
+    ctx.stroke();
+    drawKeypoints(ctx, [g_shape1_cpy[5]], "green");
+    ctx.stroke();
+
+    var point = {x: percentageDone* 100, y: frame(g_shape1_cpy)};
+    result1.push(point);
+
+    //
+    scale = .2+5*percentageDone;
+    var g_shape2_cpy = g_shape2;
+    g_shape2_cpy = applyTransformationMatrixToAllKeypointsObjects(g_shape2_cpy, getScaleMatrix(2,2));
+    g_shape2_cpy = applyTransformationMatrixToAllKeypointsObjects(g_shape2_cpy, getScaleMatrix(Math.sqrt(scale), 1/Math.sqrt(scale)));
+
+    result2.push({x: percentageDone*100, y: frame(g_shape2_cpy)});
+
+    // g_shape2_cpy = applyTransformationMatrixToAllKeypointsObjects(g_shape2_cpy, getTranslateMatrix(2, 0));
     ctx.beginPath();
-    drawPolygonPath(ctx, g_shape1);
+    drawPolygonPath(ctx, g_shape2_cpy);
+    debugger;
     ctx.stroke();
-    drawPolygonPath(ctx, g_shape2);
+    drawKeypoints(ctx, [g_shape2_cpy[5]], "blue");
     ctx.stroke();
-    drawKeypoints(ctx, [g_shape1[5]], "green");
-    drawKeypoints(ctx, [g_shape2[5]], "black");
+
+
+    //plot result
+    ctx.beginPath();
+
+    drawPolygonPath(ctx, result1);
+
+    ctx.strokeStyle = "blue"
+    ctx.stroke();
+
+    var result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2, getTranslateMatrix(6.5, 0));
+    ctx.beginPath();
+
+    drawPolygonPath(ctx, result2Draw);
+    ctx.strokeStyle = "green"
+    ctx.stroke();
+    ctx.strokeStyle = "blue"
 
     window.requestAnimationFrame(draw);
     percentageDone += .001;
@@ -1997,14 +1980,14 @@ function draw() {
 function generateAllTheInfo() {
     g_initPts = getCirclePoints();
 
-    var scale = 1;
+    var scale = 1.2;
     var transformedToken1 = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix(Math.sqrt(scale), 1/Math.sqrt(scale)));
     // var transformedToken2 = applyTransformationMatrixToAllKeypointsObjects(transformedToken1, getTranslateMatrix(0, 10));
     //var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix(1, (1+2*percent)));
     var g_initPts2 = transformedToken1;
     g_shape1 = g_initPts;
     // g_shape1 = applyTransformationMatrixToAllKeypointsObjects(g_shape1, getTranslateMatrix(10, 10));
-    g_shape2 = g_initPts2;
+    g_shape2 = transformedToken1;
     var xArr = stripX(g_initPts2);
     var yArr = stripY(g_initPts2);
     var fx = smooth(getUniformIndexes(xArr), xArr);
@@ -2013,26 +1996,26 @@ function generateAllTheInfo() {
     var result = [];
     percentageDone = 0;
     result = [];
-    for (var i = 0; i < 10000; i++) {
-        if (percentageDone > .99) {
-            break;
-        }
-        var res = frame(percentageDone, g_shape1);
-        result.push(res);
-        percentageDone += .01;
-    }
-    rateOfChangeGraph1 = result
+    // for (var i = 0; i < 10000; i++) {
+    //     if (percentageDone > .99) {
+    //         break;
+    //     }
+    //     var res = frame(percentageDone, g_shape1);
+    //     result.push(res);
+    //     percentageDone += .01;
+    // }
+    // rateOfChangeGraph1 = result
     percentageDone = 0;
     result = [];
-    for (var i = 0; i < 10000; i++) {
-        if (percentageDone > .99) {
-            break;
-        }
-        var res = frame(percentageDone, g_shape2);
-        result.push(res);
-        percentageDone += .01;
-    }
-    rateOfChangeGraph2 = result
+    // for (var i = 0; i < 10000; i++) {
+    //     if (percentageDone > .99) {
+    //         break;
+    //     }
+    //     var res = frame(percentageDone, g_shape2);
+    //     result.push(res);
+    //     percentageDone += .01;
+    // }
+    // rateOfChangeGraph2 = result
     percentageDone = 0;
     draw();
 }
