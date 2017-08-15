@@ -1700,7 +1700,7 @@ function getCirclePoints() {
     return result;
 }
 
-function frame(inputPoints) {
+function frame(inputPoints, idx) {
 
     var scale =1;// 1/4+5*percent;
 
@@ -1726,7 +1726,7 @@ function frame(inputPoints) {
     // drawKeypoints(ctx, g_initPts2, "green");
     // drawKeypoints(ctx, [g_initPts2[5]], "black");
     //var xpt = g_globalState.currentMouseCanvasPosition.x;
-    var tVal = tListReparametrised[5];
+    var tVal = tListReparametrised[idx];
     var pt = {
         x: getDerivative(fx, tVal, 0)*g_mult,
         y: getDerivative(fy, tVal, 0)*g_mult
@@ -1837,6 +1837,13 @@ function matchSegmentToLine(bigLine, segment) {
     return minimumAmountOfError;
 }
 
+function toArcLengthSpline_monotonicallyIncreasingX(pts) {
+    var xArr = stripX(pts);
+    var yArr = stripY(pts);
+    var fx = smooth(xArr, yArr);
+    return fx
+}
+
 function toArcLengthSpline(pts) {
     var xArr = stripX(pts);
     var yArr = stripY(pts);
@@ -1872,6 +1879,17 @@ function getRangedSpline(pts) {
     };
 }
 
+function functionToPoints_monotonicallyIncreasingX(fx, start, end, step) {
+    var result = []
+    var slideRange = end - start;
+    for (var i = 0; i < slideRange/step; i++) {
+        var x = start + step*i;
+        var y = getDerivative(fx, start + step*i, 0);
+        result.push({x: x, y: y});
+    }
+    return result;
+}
+
 function functionToPoints(fx, fy, start, end, step) {
     var result = []
     var slideRange = end - start;
@@ -1883,14 +1901,41 @@ function functionToPoints(fx, fy, start, end, step) {
     return result;
 }
 
-function chopPts(pts, start, end, step) {
+
+//we presume x starts from zero!!!
+var lengthOfSegment = 30;
+function chopPts_monotonicallyIncreasingX(pts, start, step) {
+    var xArr = stripX(pts);
+    var fx = toArcLengthSpline_monotonicallyIncreasingX(pts);
+    var startX = xArr[0];
+    var length = (xArr[xArr.length - 1] - lengthOfSegment) - startX;//FINISH THIS
+    var part = functionToPoints_monotonicallyIncreasingX(fx, (start*length)+startX, (start*length)+startX+lengthOfSegment, step);
+    return part;
+}
+
+function chopPts(pts, start, step) {
     var fxTemp = toArcLengthSpline(pts);
     var fx = fxTemp[0];
     var fy = fxTemp[1];
     var tList = fxTemp[2];
-    var length = tList[tList.length - 1];
-    var part = functionToPoints(fx, fy, start*length, end*length, step);
+    var tListMaxValue = tList[tList.length - 1];
+    var maxXValue = getDerivative(fx, tListMaxValue, 0) - lengthOfSegment;//FINISH THIS
+
+    //tranlate back into t values...??????
+    var part = functionToPoints(fx, fy, start*length, start*length+lengthOfSegment, step);
     return part;
+}
+
+function chopPtsZeroFix(pts, start, step) {
+    var parts = chopPts_monotonicallyIncreasingX(pts, start, step);
+    var startVal = parts[0].x;
+    for (var i = 0; i < parts.length; i++) {
+        parts[i] = {
+            x: parts[i].x - startVal,
+            y: parts[i].y
+        };
+    }
+    return parts;
 }
 
 function calcMinArray(pts1, pts2) {
@@ -1953,7 +1998,6 @@ function draw() {
         transShape2 = applyTransformationMatrixToAllKeypointsObjects(transShape2, getTranslateMatrix( cntPnt.x,  cntPnt.y));
     }
 
-
     //draw the shapes + the keypoint
     {
         //shape 1
@@ -1971,14 +2015,8 @@ function draw() {
         ctx.beginPath();
         drawPolygonPath(ctx, transShape2Draw);
         ctx.stroke();
-        drawKeypoints(ctx, [transShape2Draw[5]], "blue");
+        drawKeypoints(ctx, [transShape2Draw[3]], "blue");
         ctx.stroke();
-    }
-
-    //get the current curvature point
-    {
-        result1.push({x: percentageDone*80, y: frame(transShape1)/4 });
-        result2.push({x: percentageDone*80, y: frame(transShape2)/4 });
     }
 
     //plot the curvatures
@@ -1986,14 +2024,18 @@ function draw() {
         ctx.strokeStyle = "green";
         ctx.beginPath();
         var scale = 2;
-        var result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1, getTranslateMatrix(1, 0));
-        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(2, 1));
+        var result1Draw = result1;;
+        result1Draw = chopPtsZeroFix(result1Draw, .1, .1);
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(1, 1));//change this value
         drawPolygonPath(ctx, result1Draw);
         ctx.stroke();
 
         ctx.strokeStyle = "red";
         ctx.beginPath();
-        var result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2, getTranslateMatrix(0, 0));
+        var result2Draw = result2;
+        result2Draw = chopPtsZeroFix(result2Draw, .1, .1);
+        result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
     }
@@ -2020,6 +2062,52 @@ function generateAllTheInfo() {
         g_shape1 = applyTransformationMatrixToAllKeypointsObjects(g_shape1, getTranslateMatrix(-cntPnt.x, -cntPnt.y));
         g_shape1 = applyTransformationMatrixToAllKeypointsObjects(g_shape1, getScaleMatrix(Math.sqrt(scale), 1/Math.sqrt(scale)));
         g_shape1 = applyTransformationMatrixToAllKeypointsObjects(g_shape1, getTranslateMatrix( cntPnt.x,  cntPnt.y));
+    }
+
+    percentageDone = 0;
+
+
+    while(true) {
+        if (percentageDone > .99) {
+            break;
+        }
+
+        //set the current state of the shape
+        var scale = 1;
+        scale = .1+(percentageDone*4)//(2.5*(percentageDone+1.01));
+        var transShape1 = g_shape1;
+        {
+            var cntPntTemp = getCenterPointOfPoly(transShape1);
+            var cntPnt = {
+                x: cntPntTemp[0],
+                y: cntPntTemp[1]
+            };
+            transShape1 = applyTransformationMatrixToAllKeypointsObjects(transShape1, getTranslateMatrix(-cntPnt.x, -cntPnt.y));
+            transShape1 = applyTransformationMatrixToAllKeypointsObjects(transShape1, getScaleMatrix(Math.sqrt(scale), 1/Math.sqrt(scale)));
+            transShape1 = applyTransformationMatrixToAllKeypointsObjects(transShape1, getTranslateMatrix( cntPnt.x,  cntPnt.y));
+        }
+
+
+        scale = .1+(percentageDone*4)//((2.5*(percentageDone*2+.01)));
+        var transShape2 = g_shape2;
+        {
+            var cntPntTemp = getCenterPointOfPoly(transShape2);
+            var cntPnt = {
+                x: cntPntTemp[0],
+                y: cntPntTemp[1]
+            };
+            transShape2 = applyTransformationMatrixToAllKeypointsObjects(transShape2, getTranslateMatrix(-cntPnt.x, -cntPnt.y));
+            transShape2 = applyTransformationMatrixToAllKeypointsObjects(transShape2, getScaleMatrix(Math.sqrt(scale), 1/Math.sqrt(scale)));
+            transShape2 = applyTransformationMatrixToAllKeypointsObjects(transShape2, getTranslateMatrix( cntPnt.x,  cntPnt.y));
+        }
+
+        //get the current curvature point
+        {
+            result1.push({x: percentageDone*80, y: frame(transShape1, 3)/4 });
+            result2.push({x: percentageDone*80, y: frame(transShape2, 5)/4 });
+        }
+
+        percentageDone += .011;
     }
 
     percentageDone = 0;
