@@ -1879,10 +1879,11 @@ function getRangedSpline(pts) {
     };
 }
 
-function functionToPoints_monotonicallyIncreasingX(fx, start, end, step) {
+function functionToPoints_monotonicallyIncreasingX(fx, start, end, numberOfPoints) {
     var result = []
     var slideRange = end - start;
-    for (var i = 0; i < slideRange/step; i++) {
+    var step = slideRange/numberOfPoints;
+    for (var i = 0; i < numberOfPoints; i++) {
         var x = start + step*i;
         var y = getDerivative(fx, start + step*i, 0);
         result.push({x: x, y: y});
@@ -1904,12 +1905,13 @@ function functionToPoints(fx, fy, start, end, step) {
 
 //we presume x starts from zero!!!
 var lengthOfSegment = 30;
-function chopPts_monotonicallyIncreasingX(pts, start, step) {
+function chopPts_monotonicallyIncreasingX(pts, start, numberOfPoints) {
     var xArr = stripX(pts);
     var fx = toArcLengthSpline_monotonicallyIncreasingX(pts);
     var startX = xArr[0];
     var length = (xArr[xArr.length - 1] - lengthOfSegment) - startX;//FINISH THIS
-    var part = functionToPoints_monotonicallyIncreasingX(fx, (start*length)+startX, (start*length)+startX+lengthOfSegment, step);
+    var start2 = (start*length)+startX;
+    var part = functionToPoints_monotonicallyIncreasingX(fx, start2, start2+lengthOfSegment, numberOfPoints);
     return part;
 }
 
@@ -1926,8 +1928,8 @@ function chopPts(pts, start, step) {
     return part;
 }
 
-function chopPtsZeroFix(pts, start, step) {
-    var parts = chopPts_monotonicallyIncreasingX(pts, start, step);
+function chopPtsZeroFix(pts, start, numberOfPoints) {
+    var parts = chopPts_monotonicallyIncreasingX(pts, start, numberOfPoints);
     var startVal = parts[0].x;
     for (var i = 0; i < parts.length; i++) {
         parts[i] = {
@@ -1953,6 +1955,24 @@ function calcMinArray(pts1, pts2) {
     }
     return minDiff;
 }
+
+function functionToMinimise(scaleChange, percentage1, percentage2) {
+
+    var result1Draw = result1;
+    result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(scaleChange, 1));//change this value
+    result1Draw = chopPtsZeroFix(result1Draw, percentage1, 300);
+    result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
+
+    var result2Draw = result2;
+    result2Draw = chopPtsZeroFix(result2Draw, percentage2, 300);
+    result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
+
+    var diff = calcDifference(result1Draw, result2Draw);
+    //console.log("diff: " + diff);
+    return diff;
+}
+
+
 
 var g_shape1 = null;
 var g_shape2 = null;
@@ -2025,7 +2045,7 @@ function draw() {
         ctx.beginPath();
         var scale = 2;
         var result1Draw = result1;;
-        result1Draw = chopPtsZeroFix(result1Draw, .1, .1);
+        result1Draw = chopPtsZeroFix(result1Draw, percentageDone, 300);
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(1, 1));//change this value
         drawPolygonPath(ctx, result1Draw);
@@ -2034,7 +2054,7 @@ function draw() {
         ctx.strokeStyle = "red";
         ctx.beginPath();
         var result2Draw = result2;
-        result2Draw = chopPtsZeroFix(result2Draw, .1, .1);
+        result2Draw = chopPtsZeroFix(result2Draw, percentageDone, 300);
         result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
@@ -2867,5 +2887,4 @@ function init() {
 }
 
 init();
-
 
