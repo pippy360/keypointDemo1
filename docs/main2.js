@@ -2046,7 +2046,7 @@ function draw() {
         var scale = 2;
         var result1Draw = result1;;
         result1Draw = chopPtsZeroFix(result1Draw, percentageDone, 300);
-        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(10, 10));
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(1, 1));//change this value
         drawPolygonPath(ctx, result1Draw);
         ctx.stroke();
@@ -2055,9 +2055,52 @@ function draw() {
         ctx.beginPath();
         var result2Draw = result2;
         result2Draw = chopPtsZeroFix(result2Draw, percentageDone, 300);
+        result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(10, 10));
+        drawPolygonPath(ctx, result2Draw);
+        ctx.stroke();
+    }
+
+    //plot the full results curves
+    {
+        ctx.strokeStyle = "red";
+        ctx.beginPath();
+        var scale = 2;
+        var result1Draw = result1;;
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(1, 1));//change this value
+        drawPolygonPath(ctx, result1Draw);
+        ctx.stroke();
+
+        ctx.strokeStyle = "green";
+        ctx.beginPath();
+        var result2Draw = result2;
         result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
+    }
+
+    //plot the curvatures
+    {
+        var temp = ctx.lineWidth;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        var scale = 2;
+        var result1Draw = result1;;
+        result1Draw = chopPts_monotonicallyIncreasingX(result1Draw, percentageDone, 300);
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(1, 1));//change this value
+        drawPolygonPath(ctx, result1Draw);
+        ctx.stroke();
+
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        var result2Draw = result2;
+        result2Draw = chopPts_monotonicallyIncreasingX(result2Draw, percentageDone, 300);
+        result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
+        drawPolygonPath(ctx, result2Draw);
+        ctx.stroke();
+        ctx.lineWidth = temp;
     }
 
     window.requestAnimationFrame(draw);
