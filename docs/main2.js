@@ -1980,10 +1980,19 @@ var result1 = [];
 var result2 = [];
 
 
+
 // percentageDone = 0;
+var g_percent1 = .01;
+var g_percent2 = .01;
+var g_scale1 = .5;
+
 function draw() {
-    if (percentageDone > .99) {
+    console.log(g_percent1  + " %:% " + g_percent2 );
+    if ((g_percent1 > .99 && g_percent2 > .99)) {
         return;
+    } else if(g_percent1 > .99){
+        g_percent1 = .01;
+        g_percent2 += .1;
     }
 
     var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
@@ -2045,16 +2054,16 @@ function draw() {
         ctx.beginPath();
         var scale = 2;
         var result1Draw = result1;;
-        result1Draw = chopPtsZeroFix(result1Draw, percentageDone, 300);
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(g_scale1, 1));//change this value
+        result1Draw = chopPtsZeroFix(result1Draw, g_percent1, 300);
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(10, 10));
-        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(1, 1));//change this value
         drawPolygonPath(ctx, result1Draw);
         ctx.stroke();
 
         ctx.strokeStyle = "red";
         ctx.beginPath();
         var result2Draw = result2;
-        result2Draw = chopPtsZeroFix(result2Draw, percentageDone, 300);
+        result2Draw = chopPtsZeroFix(result2Draw, g_percent2, 300);
         result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(10, 10));
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
@@ -2067,7 +2076,7 @@ function draw() {
         var scale = 2;
         var result1Draw = result1;;
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
-        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(1, 1));//change this value
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(g_scale1, 1));//change this value
         drawPolygonPath(ctx, result1Draw);
         ctx.stroke();
 
@@ -2087,16 +2096,16 @@ function draw() {
         ctx.beginPath();
         var scale = 2;
         var result1Draw = result1;;
-        result1Draw = chopPts_monotonicallyIncreasingX(result1Draw, percentageDone, 300);
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(g_scale1, 1));//change this value
+        result1Draw = chopPts_monotonicallyIncreasingX(result1Draw, g_percent1, 300);
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
-        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(1, 1));//change this value
         drawPolygonPath(ctx, result1Draw);
         ctx.stroke();
 
         ctx.strokeStyle = "black";
         ctx.beginPath();
         var result2Draw = result2;
-        result2Draw = chopPts_monotonicallyIncreasingX(result2Draw, percentageDone, 300);
+        result2Draw = chopPts_monotonicallyIncreasingX(result2Draw, g_percent2, 300);
         result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
@@ -2104,7 +2113,9 @@ function draw() {
     }
 
     window.requestAnimationFrame(draw);
+
     percentageDone += .001;
+    g_percent1 += .01;
     return [];
 }
 
