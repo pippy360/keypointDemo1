@@ -1972,6 +1972,19 @@ function functionToMinimise(scaleChange, percentage1, percentage2) {
     return diff;
 }
 
+function getMin(){
+    var result = 10000
+    for (var i = 0.01; i < 1; i += 0.1) {
+        for (var j = 0.01; j < 1; j += 0.1) {
+            var diff = functionToMinimise(2, i, j);
+            if (diff < result) {
+                result = diff;
+            }
+        }
+    }
+    return result;
+}
+
 
 
 var g_shape1 = null;
@@ -1984,10 +1997,10 @@ var result2 = [];
 // percentageDone = 0;
 var g_percent1 = .01;
 var g_percent2 = .01;
-var g_scale1 = .5;
-
+var g_scale1 = 2;
+var g_min = 100000
 function draw() {
-    console.log(g_percent1  + " %:% " + g_percent2 );
+    //console.log(g_percent1  + " %:% " + g_percent2 );
     if ((g_percent1 > .99 && g_percent2 > .99)) {
         return;
     } else if(g_percent1 > .99){
@@ -2083,7 +2096,7 @@ function draw() {
         ctx.strokeStyle = "green";
         ctx.beginPath();
         var result2Draw = result2;
-        result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
+        result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(1, 1));
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
     }
@@ -2106,10 +2119,11 @@ function draw() {
         ctx.beginPath();
         var result2Draw = result2;
         result2Draw = chopPts_monotonicallyIncreasingX(result2Draw, g_percent2, 300);
-        result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
+        result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(1, 1));
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
         ctx.lineWidth = temp;
+        console.log("Diff: " + g_min  + " : "  + calcDifference(result1Draw, result2Draw) + " : " + g_percent1 + " : " + g_percent2 + " : ");
     }
 
     window.requestAnimationFrame(draw);
@@ -2118,6 +2132,7 @@ function draw() {
     g_percent1 += .01;
     return [];
 }
+
 
 function generateAllTheInfo() {
     g_initPts = getCirclePoints();
@@ -2177,13 +2192,13 @@ function generateAllTheInfo() {
 
         //get the current curvature point
         {
-            result1.push({x: percentageDone*80, y: frame(transShape1, 3)/4 });
+            result1.push({x: percentageDone*80, y: frame(transShape1, 5)/4 });
             result2.push({x: percentageDone*80, y: frame(transShape2, 5)/4 });
         }
 
         percentageDone += .011;
     }
-
+    g_min = getMin();
     percentageDone = 0;
     draw();
 }
@@ -2941,4 +2956,3 @@ function init() {
 }
 
 init();
-
