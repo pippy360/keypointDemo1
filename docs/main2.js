@@ -1970,6 +1970,13 @@ function functionToMinimise(scaleChange, percentage1, percentage2) {
 }
 
 function getMin(){
+    return {
+        p1: 1,
+        p2: 1,
+        s: 1,//scale here
+        minVal: 1
+    };
+
     var result = {
         minVal: 10000
     };
@@ -2073,7 +2080,7 @@ function draw() {
 
     //plot the curvatures
     {
-        ctx.strokeStyle = "green";
+        ctx.strokeStyle = "red";
         ctx.beginPath();
         var scale = 2;
         var result1Draw = result1;
@@ -2083,7 +2090,7 @@ function draw() {
         drawPolygonPath(ctx, result1Draw);
         ctx.stroke();
 
-        ctx.strokeStyle = "red";
+        ctx.strokeStyle = "green";
         ctx.beginPath();
         var result2Draw = result2;
         result2Draw = chopPtsZeroFix(result2Draw, g_percent2, 300);
