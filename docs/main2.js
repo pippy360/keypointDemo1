@@ -1973,16 +1973,18 @@ function getMin(){
     var result = {
         minVal: 10000
     };
-    for (var i = 0.01; i < 1; i += 0.1) {
-        for (var j = 0.01; j < 1; j += 0.1) {
-            var diff = functionToMinimise(2, i, j);
-            if (diff < result.minVal) {
-                result = {
-                    p1: i,
-                    p2: j,
-                    s: 2,//scale here
-                    minVal: diff
-                };
+    for (var s = 0.5; s < 3; s += 0.1) {
+        for (var i = 0.01; i < 1; i += 0.1) {
+            for (var j = 0.01; j < 1; j += 0.1) {
+                var diff = functionToMinimise(s, i, j);
+                if (diff < result.minVal) {
+                    result = {
+                        p1: i,
+                        p2: j,
+                        s: s,//scale here
+                        minVal: diff
+                    };
+                }
             }
         }
     }
@@ -2151,7 +2153,7 @@ function draw() {
         var g_percent1Val = Math.round( g_percent1 * roundNum ) / roundNum;
         var g_percent2Val = Math.round( g_percent2 * roundNum ) / roundNum;
         var thisDiffVal = Math.round( thisDiff * roundNum ) / roundNum;
-        console.log("calcMin: " + gminVal + ":"+ p1 +":" + p2 + " newGMin:" + newG_minVal + " \t now: "  + thisDiffVal + " \tperc1: " + g_percent1Val + "\tperc2: " + g_percent2Val);
+        console.log("calcMin: " + gminVal + "  "+ g_min.s +":"+ p1 +":" + p2 + " newGMin:" + newG_minVal + " \t now: "  + thisDiffVal + " \tperc1: " + g_percent1Val + "\tperc2: " + g_percent2Val);
     }
 
     window.requestAnimationFrame(draw);
