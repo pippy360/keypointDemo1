@@ -2001,11 +2001,14 @@ var g_scale1 = 2;
 var g_min = 100000
 function draw() {
     //console.log(g_percent1  + " %:% " + g_percent2 );
-    if ((g_percent1 > .99 && g_percent2 > .99)) {
+    if ((g_percent1 >= .99 && g_percent2 >= .99)) {
         return;
     } else if(g_percent1 > .99){
         g_percent1 = .01;
         g_percent2 += .1;
+    }
+    if(g_percent2 > .99) {
+        g_percent2 = .999;
     }
 
     var ctx = g_globalState.interactiveCanvasState.uiLayerCanvasContext;
