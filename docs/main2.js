@@ -1970,12 +1970,12 @@ function functionToMinimise(scaleChange, percentage1, percentage2) {
 }
 
 function getMin(){
-    return {
-        p1: 1,
-        p2: 1,
-        s: 1,//scale here
-        minVal: 1
-    };
+    // return {
+    //     p1: 1,
+    //     p2: 1,
+    //     s: 1,//scale here
+    //     minVal: 1
+    // };
 
     var result = {
         minVal: 10000
@@ -2104,7 +2104,7 @@ function draw() {
         ctx.strokeStyle = "red";
         ctx.beginPath();
         var scale = 2;
-        var result1Draw = result1;;
+        var result1Draw = result1;
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(g_scale1, 1));//change this value
         drawPolygonPath(ctx, result1Draw);
@@ -2125,7 +2125,7 @@ function draw() {
         ctx.strokeStyle = "black";
         ctx.beginPath();
         var scale = 2;
-        var result1Draw = result1;;
+        var result1Draw = result1;
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(g_scale1, 1));//change this value
         result1Draw = chopPts_monotonicallyIncreasingX(result1Draw, g_percent1, 300);
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
@@ -2141,7 +2141,7 @@ function draw() {
         ctx.stroke();
         ctx.lineWidth = temp;
 
-        result1Draw = result1;;
+        result1Draw = result1;
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(g_scale1, 1));//change this value
         result1Draw = chopPtsZeroFix(result1Draw, g_percent1, 300);
 
@@ -2170,6 +2170,57 @@ function draw() {
     return [];
 }
 
+function linspace(a,b,n) {
+    if(typeof n === "undefined") n = Math.max(Math.round(b-a)+1,1);
+    if(n<2) { return n===1?[a]:[]; }
+    var i,ret = Array(n);
+    n--;
+    for(i=n;i>=0;i--) { ret[i] = (i*b+(n-i)*a)/n; }
+    return ret;
+}
+
+function thatCurve(delta){
+
+    var noOfPoints=20;
+    var a=9;
+    var b=6;
+    var pi = Math.PI
+    var div = (a>b)? a: b
+    var end = -parseFloat(Math.PI*(parseFloat(b)/parseFloat(a)));
+    var offset = -parseFloat(pi*(parseFloat(b)/parseFloat(a)))/4
+    var t = linspace(offset,end+offset,noOfPoints)
+
+
+
+    var x = []
+    var y = []
+    for (var i = 0; i < t.length; i += 1) {
+        x.push(Math.sin(a * t[i] + delta))
+        y.push(Math.sin(b * t[i]))
+    }
+    var ret = [];
+    for (var i = 0; i < x.length; i += 1) {
+        ret.push( {
+            x: i/.5,//x[i]*10 + 10,
+            y: y[i]*10 + 10
+        } );
+    }
+    return ret
+}
+
+
+function genResult1() {
+    //x from 0 - 100
+    //y from 0 - 10
+
+    // return thatCurve(0)
+    return result1
+}
+
+function genResult2() {
+    // return thatCurve(2);
+    return result2;
+}
 
 function generateAllTheInfo() {
     g_initPts = getCirclePoints();
@@ -2229,12 +2280,15 @@ function generateAllTheInfo() {
 
         //get the current curvature point
         {
-            result1.push({x: percentageDone*80, y: frame(transShape1, 5)/4 });
+            result1.push({x: percentageDone*80, y: frame(transShape1, 3)/4 });
             result2.push({x: percentageDone*80, y: frame(transShape2, 5)/4 });
         }
 
         percentageDone += .011;
     }
+
+    result1 = genResult1();
+    result2 = genResult2();
     g_min = getMin();
     percentageDone = 0;
     draw();
