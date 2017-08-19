@@ -1961,14 +1961,11 @@ function functionToMinimise(scaleChange, percentage1, percentage2) {
     var result1Draw = result1;
     result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(scaleChange, 1));//change this value
     result1Draw = chopPtsZeroFix(result1Draw, percentage1, 300);
-    result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(0, 0));
 
     var result2Draw = result2;
     result2Draw = chopPtsZeroFix(result2Draw, percentage2, 300);
-    result2Draw = applyTransformationMatrixToAllKeypointsObjects(result2Draw, getTranslateMatrix(0, 0));
 
     var diff = calcDifference(result1Draw, result2Draw);
-    //console.log("diff: " + diff);
     return diff;
 }
 
@@ -2006,6 +2003,7 @@ var g_percent1 = .01;
 var g_percent2 = .01;
 var g_scale1 = 2;
 var g_min = 100000
+var newG_min = 1000000;
 function draw() {
     //console.log(g_percent1  + " %:% " + g_percent2 );
     if ((g_percent1 >= .99 && g_percent2 >= .99)) {
@@ -2076,7 +2074,7 @@ function draw() {
         ctx.strokeStyle = "green";
         ctx.beginPath();
         var scale = 2;
-        var result1Draw = result1;;
+        var result1Draw = result1;
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(g_scale1, 1));//change this value
         result1Draw = chopPtsZeroFix(result1Draw, g_percent1, 300);
         result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getTranslateMatrix(10, 10));
@@ -2133,7 +2131,27 @@ function draw() {
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
         ctx.lineWidth = temp;
-        console.log("Diff: " + g_min.minVal  + " : "  + calcDifference(result1Draw, result2Draw) + " : " + g_percent1 + " : " + g_percent2 + " : ");
+
+        result1Draw = result1;;
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(g_scale1, 1));//change this value
+        result1Draw = chopPtsZeroFix(result1Draw, g_percent1, 300);
+
+        result2Draw = result2;
+        result2Draw = chopPtsZeroFix(result2Draw, g_percent2, 300);
+
+        var thisDiff = calcDifference(result1Draw, result2Draw);
+
+        if (thisDiff < newG_min) newG_min = thisDiff;
+
+        var roundNum = 100;
+        var gminVal = Math.round( g_min.minVal * roundNum ) / roundNum;
+        var p1 = Math.round( g_min.p1 * roundNum ) / roundNum;
+        var p2 = Math.round( g_min.p2 * roundNum ) / roundNum;
+        var newG_minVal = Math.round( newG_min * roundNum ) / roundNum;
+        var g_percent1Val = Math.round( g_percent1 * roundNum ) / roundNum;
+        var g_percent2Val = Math.round( g_percent2 * roundNum ) / roundNum;
+        var thisDiffVal = Math.round( thisDiff * roundNum ) / roundNum;
+        console.log("calcMin: " + gminVal + ":"+ p1 +":" + p2 + " newGMin:" + newG_minVal + " \t now: "  + thisDiffVal + " \tperc1: " + g_percent1Val + "\tperc2: " + g_percent2Val);
     }
 
     window.requestAnimationFrame(draw);
