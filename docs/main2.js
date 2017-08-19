@@ -1973,12 +1973,19 @@ function functionToMinimise(scaleChange, percentage1, percentage2) {
 }
 
 function getMin(){
-    var result = 10000
+    var result = {
+        minVal: 10000
+    };
     for (var i = 0.01; i < 1; i += 0.1) {
         for (var j = 0.01; j < 1; j += 0.1) {
             var diff = functionToMinimise(2, i, j);
-            if (diff < result) {
-                result = diff;
+            if (diff < result.minVal) {
+                result = {
+                    p1: i,
+                    p2: j,
+                    s: 2,//scale here
+                    minVal: diff
+                };
             }
         }
     }
@@ -2060,7 +2067,7 @@ function draw() {
         ctx.beginPath();
         drawPolygonPath(ctx, transShape2Draw);
         ctx.stroke();
-        drawKeypoints(ctx, [transShape2Draw[3]], "blue");
+        drawKeypoints(ctx, [transShape2Draw[5]], "blue");
         ctx.stroke();
     }
 
@@ -2126,7 +2133,7 @@ function draw() {
         drawPolygonPath(ctx, result2Draw);
         ctx.stroke();
         ctx.lineWidth = temp;
-        console.log("Diff: " + g_min  + " : "  + calcDifference(result1Draw, result2Draw) + " : " + g_percent1 + " : " + g_percent2 + " : ");
+        console.log("Diff: " + g_min.minVal  + " : "  + calcDifference(result1Draw, result2Draw) + " : " + g_percent1 + " : " + g_percent2 + " : ");
     }
 
     window.requestAnimationFrame(draw);
