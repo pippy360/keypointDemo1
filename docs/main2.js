@@ -1690,7 +1690,7 @@ function getUniformIndexes(inputArr) {
 function getCirclePoints() {
     var r = 3;
     var result = [];
-    var n = 10;
+    var n = 40;
     for (var i = 0; i < n; i++) {
         result.push({
                 x: math.cos(4*Math.PI/n*i)*r + 4,
@@ -2013,6 +2013,11 @@ var g_percent2 = .01;
 var g_scale1 = 2;
 var g_min = 100000
 var newG_min = 1000000;
+
+
+var keypoint1Idx = 8;
+var keypoint2Idx = 8;
+
 function draw() {
     //console.log(g_percent1  + " %:% " + g_percent2 );
     if ((g_percent1 >= .99 && g_percent2 >= .99)) {
@@ -2065,7 +2070,7 @@ function draw() {
         ctx.beginPath();
         drawPolygonPath(ctx, transShape1Draw);
         ctx.stroke();
-        drawKeypoints(ctx, [transShape1Draw[5]], "green");
+        drawKeypoints(ctx, [transShape1Draw[keypoint1Idx]], "green");
         ctx.stroke();
 
         //shape 2
@@ -2074,7 +2079,7 @@ function draw() {
         ctx.beginPath();
         drawPolygonPath(ctx, transShape2Draw);
         ctx.stroke();
-        drawKeypoints(ctx, [transShape2Draw[5]], "blue");
+        drawKeypoints(ctx, [transShape2Draw[keypoint2Idx]], "blue");
         ctx.stroke();
     }
 
@@ -2280,8 +2285,8 @@ function generateAllTheInfo() {
 
         //get the current curvature point
         {
-            result1.push({x: percentageDone*80, y: frame(transShape1, 3)/4 });
-            result2.push({x: percentageDone*80, y: frame(transShape2, 5)/4 });
+            result1.push({x: percentageDone*80, y: frame(transShape1, keypoint1Idx)/4 });
+            result2.push({x: percentageDone*80, y: frame(transShape2, keypoint2Idx)/4 });
         }
 
         percentageDone += .011;
