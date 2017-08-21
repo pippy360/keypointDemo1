@@ -418,7 +418,7 @@ function stripY(pts) {
 
 function getDerivative(stateStruct, t, i) {
     var derivatives = calcSplineAtX(t, stateStruct.xs, stateStruct.ys, stateStruct.ks);
-    return derivatives[i];
+    return isNaN(derivatives[i])? 99999: derivatives[i];
 }
 
 function smooth(xs, ys) {
@@ -1811,31 +1811,6 @@ function calcDifference(pts1, pts2) {
     return result;
 }
 
-function getMinValue(inputArr) {
-    var minVal = inputArr[0];
-    for (var i = 0; i < slideRange/SLIDE_STEP; i++) {
-        if(inputArr[i] < minVal) {
-            minVal = inputArr[i];
-        }
-    }
-    return minVal;
-}
-
-function matchSegmentToLine(bigLine, segment) {
-    //work out the maximum slide
-    //first do it with a tiny slide and take the minimum
-    var slideStart = bigLine[0].x;//min x
-    var slideRange = (bigLine[bigLine.length-1].x - bigLine[0].x) - (segment[segment.length-1].x - segment[0].x);//bigLine length - segment length
-    const SLIDE_STEP = 0.1;
-    var amountOfError = [];
-    for (var i = 0; i < slideRange/SLIDE_STEP; i++) {
-        var tempSlide = slideStart + SLIDE_STEP*i;
-        amountOfError.push(slideAndMatch(bigLine, segment, tempSlide));
-    }
-    var minimumAmountOfError = getMinValue(amountOfError);
-
-    return minimumAmountOfError;
-}
 
 function toArcLengthSpline_monotonicallyIncreasingX(pts) {
     var xArr = stripX(pts);
@@ -1956,6 +1931,26 @@ function calcMinArray(pts1, pts2) {
     return minDiff;
 }
 
+var inputRes1 = [];
+var inputRes2 = [];
+function functionToMin(v) {
+    var scaleChange = Math.abs(v[0])%4 + .5;
+    var percentage1 = Math.abs(v[1])%1;
+    var percentage2 = Math.abs(v[2])%1;
+
+    var inresult1 = inputRes1;
+    var result1Draw = inresult1;
+    result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(scaleChange, 1));//change this value
+    result1Draw = chopPtsZeroFix(result1Draw, percentage1, 30);
+
+    var inresult2 = inputRes2;
+    var result2Draw = inresult2;
+    result2Draw = chopPtsZeroFix(result2Draw, percentage2, 30);
+
+    var diff = calcDifference(result1Draw, result2Draw);
+    return diff;
+}
+
 function functionToMinimise(inresult1, inresult2, scaleChange, percentage1, percentage2) {
 
     var result1Draw = inresult1;
@@ -1998,6 +1993,14 @@ function getMin(inresult1, inresult2){
     return result;
 }
 
+function getMin2(inresult1, inresult2) {
+    var x0 = [1.0, .1, .1];
+    inputRes1 = inresult1;
+    inputRes2 = inresult2;
+    debugger;
+    var solution = nelderMead(functionToMin, x0, {maxIterations: 100});
+    return solution;
+}
 
 
 var g_shape1 = null;
@@ -2287,16 +2290,16 @@ function generateAllTheInfo() {
     var inresult1 = calcTheCurveResults(g_shape1, 5);
     result1 = inresult1;
 
-    for (var i = 0; i < g_shape1.length; i += 1) {
+    for (var i = 1/*skip first point*/; i < g_shape1.length - 1; i += 1) {
         let inI = i;
         setTimeout(function () {
 
             var inresult2 = calcTheCurveResults(g_shape2, inI);
 
-            g_min = getMin(inresult1, inresult2);
-            console.log("Check: " + inI + " - " + g_min.minVal);
+            g_min = getMin2(inresult1, inresult2);
+            console.log("Check: " + inI + " - " + g_min.fx);
 
-            if (g_min.minVal < 20){
+            if (g_min.fx < 0.01){
                 g_foundKeypoints.push(g_shape2[inI]);
                 console.log("found: " + inI);
             }
