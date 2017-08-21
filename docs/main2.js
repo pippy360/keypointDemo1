@@ -1880,13 +1880,11 @@ function functionToPoints(fx, fy, start, end, step) {
 
 //we presume x starts from zero!!!
 var lengthOfSegment = 30;
-function chopPts_monotonicallyIncreasingX(pts, start, numberOfPoints) {
-    var xArr = stripX(pts);
-    var fx = toArcLengthSpline_monotonicallyIncreasingX(pts);
-    var startX = xArr[0];
-    var length = (xArr[xArr.length - 1] - lengthOfSegment) - startX;//FINISH THIS
+function chopPts_monotonicallyIncreasingX(fx, start, numberOfPoints, scale, startX, endX) {
+    var calcLengthOfSegment = lengthOfSegment * scale;
+    var length = (endX - calcLengthOfSegment) - startX;//FINISH THIS
     var start2 = (start*length)+startX;
-    var part = functionToPoints_monotonicallyIncreasingX(fx, start2, start2+lengthOfSegment, numberOfPoints);
+    var part = functionToPoints_monotonicallyIncreasingX(fx, start2, start2+calcLengthOfSegment, numberOfPoints);
     return part;
 }
 
@@ -1903,8 +1901,8 @@ function chopPts(pts, start, step) {
     return part;
 }
 
-function chopPtsZeroFix(pts, start, numberOfPoints) {
-    var parts = chopPts_monotonicallyIncreasingX(pts, start, numberOfPoints);
+function chopPtsZeroFix(fx, start, numberOfPoints, scale, startX, endX) {
+    var parts = chopPts_monotonicallyIncreasingX(fx, start, numberOfPoints, scale, startX, endX);
     var startVal = parts[0].x;
     for (var i = 0; i < parts.length; i++) {
         parts[i] = {
@@ -1931,73 +1929,61 @@ function calcMinArray(pts1, pts2) {
     return minDiff;
 }
 
-var inputRes1 = [];
-var inputRes2 = [];
+//FIXME: make these local
+//FIXME: make these local
+//FIXME: make these local
+
+var inputRes1Fx = {
+    startX: 0,
+    endX: 0,
+    fx: null
+};
+
+var inputRes2Fx = {
+    startX: 0,
+    endX: 0,
+    fx: null
+};
+
 function functionToMin(v) {
     var scaleChange = Math.abs(v[0])%4 + .5;
     var percentage1 = Math.abs(v[1])%1;
     var percentage2 = Math.abs(v[2])%1;
 
-    var inresult1 = inputRes1;
-    var result1Draw = inresult1;
-    result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(scaleChange, 1));//change this value
-    result1Draw = chopPtsZeroFix(result1Draw, percentage1, 30);
-
-    var inresult2 = inputRes2;
-    var result2Draw = inresult2;
-    result2Draw = chopPtsZeroFix(result2Draw, percentage2, 30);
-
-    var diff = calcDifference(result1Draw, result2Draw);
-    return diff;
-}
-
-function functionToMinimise(inresult1, inresult2, scaleChange, percentage1, percentage2) {
-
-    var result1Draw = inresult1;
-    result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(scaleChange, 1));//change this value
-    result1Draw = chopPtsZeroFix(result1Draw, percentage1, 300);
-
-    var result2Draw = inresult2;
-    result2Draw = chopPtsZeroFix(result2Draw, percentage2, 300);
-
-    var diff = calcDifference(result1Draw, result2Draw);
-    return diff;
-}
-
-function getMin(inresult1, inresult2){
-    // return {
-    //     p1: 1,
-    //     p2: 1,
-    //     s: 1,//scale here
-    //     minVal: 1
-    // };
-
-    var result = {
-        minVal: 10000
-    };
-    for (var s = 0.5; s < 3; s += 0.2) {
-        for (var i = 0.01; i < 1; i += 0.2) {
-            for (var j = 0.01; j < 1; j += 0.2) {
-                var diff = functionToMinimise(inresult1, inresult2, s, i, j);
-                if (diff < result.minVal) {
-                    result = {
-                        p1: i,
-                        p2: j,
-                        s: s,//scale here
-                        minVal: diff
-                    };
-                }
-            }
-        }
+    var result1Draw;
+    {
+        result1Draw = chopPtsZeroFix(inputRes1Fx.fx, percentage1, 30, scaleChange, inputRes1Fx.startX, inputRes1Fx.endX);
+        result1Draw = applyTransformationMatrixToAllKeypointsObjects(result1Draw, getScaleMatrix(scaleChange, 1));//change this value
     }
-    return result;
+
+    var result2Draw;
+    {
+        result2Draw = chopPtsZeroFix(inputRes2Fx.fx, percentage2, 30, 1, inputRes2Fx.startX, inputRes2Fx.endX);
+    }
+
+    var diff = calcDifference(result1Draw, result2Draw);
+    return diff;
 }
 
 function getMin2(inresult1, inresult2) {
     var x0 = [1.0, .1, .1];
-    inputRes1 = inresult1;
-    inputRes2 = inresult2;
-    debugger;
+
+    {
+        var startX = inresult1[0].x;
+        var endX = inresult1[inresult1.length - 1].x;
+        inputRes1Fx.fx = toArcLengthSpline_monotonicallyIncreasingX(inresult1);
+        inputRes1Fx.startX = startX;
+        inputRes1Fx.endX = endX;
+    }
+
+    {
+        var startX = inresult2[0].x;
+        var endX = inresult2[inresult2.length - 1].x;
+        inputRes2Fx.fx = toArcLengthSpline_monotonicallyIncreasingX(inresult2);//FIXME: no need for this each time
+        inputRes2Fx.startX = startX;
+        inputRes2Fx.endX = endX;
+    }
+
     var solution = nelderMead(functionToMin, x0, {maxIterations: 100});
     return solution;
 }
@@ -2018,7 +2004,7 @@ var g_min = 100000
 var newG_min = 1000000;
 
 
-var keypoint1Idx = 4;
+var keypoint1Idx = 10;
 var keypoint2Idx = 10;
 
 function draw() {
@@ -2287,7 +2273,7 @@ function generateAllTheInfo() {
         g_shape1 = applyTransformationMatrixToAllKeypointsObjects(g_shape1, getTranslateMatrix( cntPnt.x,  cntPnt.y));
     }
 
-    var inresult1 = calcTheCurveResults(g_shape1, 5);
+    var inresult1 = calcTheCurveResults(g_shape1, keypoint1Idx);
     result1 = inresult1;
 
     for (var i = 1/*skip first point*/; i < g_shape1.length - 1; i += 1) {
