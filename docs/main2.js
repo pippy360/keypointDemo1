@@ -1052,7 +1052,11 @@ function drawKeypoints(interactiveCanvasContext, keypoints, stroke) {
     interactiveCanvasContext.strokeStyle = stroke;
     for (var i = 0; i < keypoints.length; i++) {
         var currentKeypoint = keypoints[i];
-        interactiveCanvasContext.rect(currentKeypoint.x*g_mult, currentKeypoint.y*g_mult, 4, 4);
+
+        interactiveCanvasContext.beginPath();
+        interactiveCanvasContext.arc(currentKeypoint.x*g_mult, currentKeypoint.y*g_mult, 4, 0, 2 * Math.PI, false);
+        interactiveCanvasContext.fillStyle = 'green';
+        interactiveCanvasContext.fill();
     }
     interactiveCanvasContext.closePath();
     interactiveCanvasContext.stroke();
@@ -1690,7 +1694,7 @@ function getUniformIndexes(inputArr) {
 function getCirclePoints() {
     var r = 3;
     var result = [];
-    var n = 40;
+    var n = 20;
     for (var i = 0; i < n; i++) {
         result.push({
                 x: math.cos(4*Math.PI/n*i)*r + 4,
@@ -1698,51 +1702,6 @@ function getCirclePoints() {
             });
     }
     return result;
-}
-
-function frame(inputPoints, idx) {
-
-    var scale =1;// 1/4+5*percent;
-
-    //var transformed = applyTransformationMatrixToAllKeypointsObjects(g_initPts, getScaleMatrix(1, (1+2*percent)));
-    var g_initPts2 = inputPoints;
-    var xArr = stripX(g_initPts2);
-    var yArr = stripY(g_initPts2);
-    var fx = smooth(getUniformIndexes(xArr), xArr);
-    var fy = smooth(getUniformIndexes(yArr), yArr);
-
-    //getTValueAtPoint(fx, fy, g_initPts[3]);
-
-    var tListReparametrised = cumulativeTrapz(fx, fy, getUniformIndexes(xArr), 1);
-    fx = smooth(tListReparametrised, xArr);
-    fy = smooth(tListReparametrised, yArr);
-
-    var subDiv = 8;
-    var t1 = g_start;
-    var t2 = g_end;
-    var pts = getThePoints(fx, fy, g_start, g_end, subDiv);
-
-    //drawKeypoints(ctx, pts, "blue");
-    // drawKeypoints(ctx, g_initPts2, "green");
-    // drawKeypoints(ctx, [g_initPts2[5]], "black");
-    //var xpt = g_globalState.currentMouseCanvasPosition.x;
-    var tVal = tListReparametrised[idx];
-    var pt = {
-        x: getDerivative(fx, tVal, 0)*g_mult,
-        y: getDerivative(fy, tVal, 0)*g_mult
-    };
-    // drawKeypointsWithoutScale(ctx, [pt], "blue");
-    // drawFirstDerivative(ctx, tVal, pt, fx, fy);
-    // drawSecondDerivative(ctx, tVal, pt, fx, fy);
-    // drawCurvature(ctx, pt, pts, fx, fy, tVal);
-    // ctx.strokeStyle = "red";
-    // ctx.beginPath();
-    // drawPolygonPath(ctx, pts);
-    // ctx.stroke();
-
-
-    //drawKeypointsWithoutScale(ctx, [g_globalState.currentMouseCanvasPosition], "red");
-    return calculateCurvatureAtPoints(fx, fy, tVal);
 }
 
 var xAxis = [2.622884295731352, 2.737197175179041, 2.854110209731442, 2.9736246941454385, 3.0957416362682686, 3.220461779450507,
@@ -2032,9 +1991,6 @@ function draw() {
             x: cntPntTemp[0],
             y: cntPntTemp[1]
         };
-        transShape1 = applyTransformationMatrixToAllKeypointsObjects(transShape1, getTranslateMatrix(-cntPnt.x, -cntPnt.y));
-        transShape1 = applyTransformationMatrixToAllKeypointsObjects(transShape1, getScaleMatrix(Math.sqrt(scale), 1/Math.sqrt(scale)));
-        transShape1 = applyTransformationMatrixToAllKeypointsObjects(transShape1, getTranslateMatrix( cntPnt.x,  cntPnt.y));
     }
 
 
@@ -2046,9 +2002,6 @@ function draw() {
             x: cntPntTemp[0],
             y: cntPntTemp[1]
         };
-        transShape2 = applyTransformationMatrixToAllKeypointsObjects(transShape2, getTranslateMatrix(-cntPnt.x, -cntPnt.y));
-        transShape2 = applyTransformationMatrixToAllKeypointsObjects(transShape2, getScaleMatrix(Math.sqrt(scale), 1/Math.sqrt(scale)));
-        transShape2 = applyTransformationMatrixToAllKeypointsObjects(transShape2, getTranslateMatrix( cntPnt.x,  cntPnt.y));
     }
     //
     //draw the shapes + the keypoint
@@ -2066,11 +2019,13 @@ function draw() {
         var transShape2Draw = applyTransformationMatrixToAllKeypointsObjects(transShape2, getTranslateMatrix(55, 40));
         ctx.strokeStyle = "blue";
         ctx.beginPath();
-        drawPolygonPath(ctx, transShape2Draw);
+        // drawPolygonPath(ctx, transShape2Draw);
         ctx.stroke();
-        drawKeypoints(ctx, g_foundKeypoints, "blue");
+        var transg_foundKeypoints = applyTransformationMatrixToAllKeypointsObjects(g_foundKeypoints, getTranslateMatrix(70, 40));
+        drawKeypoints(ctx, transg_foundKeypoints, "blue");
         ctx.beginPath();
-        drawPolygonPath(ctx, g_shape2);
+        var transg_shape2 = applyTransformationMatrixToAllKeypointsObjects(g_shape2, getTranslateMatrix(70, 40));
+        drawPolygonPath(ctx, transg_shape2);
         ctx.stroke();
         ctx.stroke();
     }
@@ -2178,7 +2133,7 @@ function linspace(a,b,n) {
 
 function thatCurve(delta){
 
-    var noOfPoints=20;
+    var noOfPoints=30;
     var a=9;
     var b=6;
     var pi = Math.PI
@@ -2198,7 +2153,7 @@ function thatCurve(delta){
     var ret = [];
     for (var i = 0; i < x.length; i += 1) {
         ret.push( {
-            x: i/.5,//x[i]*10 + 10,
+            x: x[i]*10 + 10,
             y: y[i]*10 + 10
         } );
     }
@@ -2220,14 +2175,9 @@ function genResult2() {
 }
 
 function calcTheCurveResults(inshape1, keypoint1Idx) {
-    var inpercentageDone = 0;
-
     var inresult1 = [];
 
-    while(true) {
-        if (inpercentageDone> .99) {
-            break;
-        }
+    for (var inpercentageDone = 0.01; inpercentageDone < 1; inpercentageDone += .05) {
 
         //set the current state of the shape
         var scale = 1;
@@ -2246,10 +2196,18 @@ function calcTheCurveResults(inshape1, keypoint1Idx) {
 
         //get the current curvature point
         {
-            inresult1.push({x: inpercentageDone*80, y: frame(transShape1, keypoint1Idx)/4 });
-        }
+            var xArr = stripX(transShape1);
+            var yArr = stripY(transShape1);
+            var fx = smooth(getUniformIndexes(xArr), xArr);
+            var fy = smooth(getUniformIndexes(yArr), yArr);
 
-        inpercentageDone += .011;
+            var tListReparametrised = cumulativeTrapz(fx, fy, getUniformIndexes(xArr), 1);
+            fx = smooth(tListReparametrised, xArr);
+            fy = smooth(tListReparametrised, yArr);
+
+            var curvatureValue = calculateCurvatureAtPoints(fx, fy, tListReparametrised[keypoint1Idx]);
+            inresult1.push({x: inpercentageDone*80, y: curvatureValue/4 });
+        }
     }
     return inresult1;
 }
@@ -2258,7 +2216,7 @@ var g_foundKeypoints = []
 
 
 function generateAllTheInfo() {
-    g_shape1 = getCirclePoints();
+    g_shape1 = thatCurve(0)//getCirclePoints();
     g_shape2 = g_shape1;
 
     {
