@@ -2243,7 +2243,7 @@ function generateAllTheInfo() {
             g_min = getMin2(inresult1, inresult2);
             console.log("Check: " + inI + " - " + g_min.fx);
 
-            if (g_min.fx < 0.01){
+            if (g_min.fx < 0.1){
                 g_foundKeypoints.push(g_shape2[inI]);
                 console.log("found: " + inI);
             }
