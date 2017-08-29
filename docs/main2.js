@@ -2220,7 +2220,7 @@ function generateAllTheInfo() {
     g_shape2 = g_shape1;
 
     {
-        var scale = 2;
+        var scale = 3;
         var cntPntTemp = getCenterPointOfPoly(g_shape2);
         var cntPnt = {
             x: cntPntTemp[0],
